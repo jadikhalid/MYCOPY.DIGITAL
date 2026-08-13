@@ -699,59 +699,176 @@ img {
   border-bottom-color: rgba(232, 235, 230, 0.4);
 }
 
-/* —— Protocol CTA (center of hero viewport) —— */
+/* —— Protocol CTA: stamp impression —— */
 .protocol-btn {
+  --stamp: #5cff9a;
+  --stamp-ink: rgba(92, 255, 154, 0.82);
   position: absolute;
   top: 50%;
-  left: 72%;
+  left: 86%;
   z-index: 3;
-  transform: translate(-50%, -50%);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: min(16rem, 72vw);
-  padding: 1rem 2.25rem;
-  font-family: var(--font-display);
-  font-weight: 750;
-  font-size: clamp(1.05rem, 2.8vw, 1.35rem);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink);
-  background: var(--signal);
-  border: 1px solid rgba(232, 235, 230, 0.2);
-  box-shadow:
-    0 0 0 1px rgba(92, 255, 154, 0.25),
-    0 12px 40px rgba(0, 0, 0, 0.45),
-    0 0 48px rgba(92, 255, 154, 0.28);
-  animation: rise 0.9s var(--ease) 0.4s both, protocol-pulse 2.8s ease-in-out 1.4s infinite;
-  transition: transform 0.2s var(--ease), background 0.2s, box-shadow 0.2s;
+  width: clamp(7.25rem, 12vw, 8.75rem);
+  height: clamp(7.25rem, 12vw, 8.75rem);
+  display: grid;
+  place-items: center;
+  color: var(--stamp);
+  background:
+    radial-gradient(circle at 28% 22%, rgba(92, 255, 154, 0.08), transparent 42%),
+    radial-gradient(circle at 78% 70%, rgba(92, 255, 154, 0.06), transparent 38%);
+  border: none;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-14deg);
+  animation: stamp-in 0.85s var(--ease) 0.35s both;
+  transition:
+    transform 0.35s var(--ease),
+    opacity 0.25s,
+    filter 0.35s var(--ease);
+  cursor: pointer;
+  text-decoration: none;
+  opacity: 0.92;
 }
 
-.protocol-btn:hover {
-  background: #7dffad;
-  transform: translate(-50%, calc(-50% - 3px));
+.protocol-btn__ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2.5px solid var(--stamp-ink);
   box-shadow:
-    0 0 0 1px rgba(92, 255, 154, 0.4),
-    0 16px 48px rgba(0, 0, 0, 0.5),
-    0 0 64px rgba(92, 255, 154, 0.4);
+    inset 0 0 0 5px transparent,
+    inset 0 0 0 7px var(--stamp-ink),
+    0 0 0 0 rgba(92, 255, 154, 0);
+  opacity: 0.9;
+  transition:
+    opacity 0.3s,
+    box-shadow 0.45s var(--ease),
+    border-color 0.3s;
+}
+
+.protocol-btn__ring::before {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 50%;
+  border: 1.5px dashed rgba(92, 255, 154, 0.7);
+  opacity: 0.8;
+  transition: opacity 0.3s, border-color 0.3s;
+}
+
+.protocol-btn__ring::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 18% 40%, transparent 0 46%, rgba(10, 12, 11, 0.35) 47% 49%, transparent 50%),
+    radial-gradient(circle at 82% 28%, transparent 0 44%, rgba(10, 12, 11, 0.28) 45% 48%, transparent 49%),
+    radial-gradient(circle at 60% 88%, transparent 0 48%, rgba(10, 12, 11, 0.3) 49% 51%, transparent 52%);
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
+
+.protocol-btn__mark {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  text-align: center;
+  padding: 0.4rem;
+  transition: transform 0.35s var(--ease);
+}
+
+.protocol-btn__brand {
+  font-family: var(--font-mono);
+  font-size: clamp(0.48rem, 0.95vw, 0.55rem);
+  letter-spacing: 0.24em;
+  text-indent: 0.24em;
+  color: var(--stamp-ink);
+  opacity: 0.75;
+  transition: opacity 0.3s, color 0.3s;
+}
+
+.protocol-btn__word {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: clamp(0.62rem, 1.25vw, 0.78rem);
+  letter-spacing: 0.1em;
+  line-height: 1;
+  color: var(--stamp);
+  transition: letter-spacing 0.35s var(--ease), text-shadow 0.35s;
+}
+
+.protocol-btn__sub {
+  font-family: var(--font-mono);
+  font-size: clamp(0.42rem, 0.85vw, 0.5rem);
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  color: var(--stamp-ink);
+  border-top: 1px solid rgba(92, 255, 154, 0.5);
+  padding-top: 0.28rem;
+  margin-top: 0.05rem;
+  opacity: 0.8;
+  transition: opacity 0.3s, border-color 0.3s, color 0.3s;
+}
+
+/* Hover: transitions only — never touch `animation` or stamp-in restarts */
+.protocol-btn:hover {
+  transform: translate(-50%, -50%) rotate(-8deg) scale(1.07);
+  opacity: 1;
+  filter: saturate(1.15) brightness(1.08);
+}
+
+.protocol-btn:hover .protocol-btn__ring {
+  opacity: 1;
+  border-color: #7dffad;
+  box-shadow:
+    inset 0 0 0 5px transparent,
+    inset 0 0 0 7px rgba(125, 255, 173, 0.95),
+    0 0 0 8px rgba(92, 255, 154, 0.2);
+}
+
+.protocol-btn:hover .protocol-btn__ring::before {
+  opacity: 1;
+  border-color: rgba(125, 255, 173, 0.95);
+}
+
+.protocol-btn:hover .protocol-btn__mark {
+  transform: scale(1.04);
+}
+
+.protocol-btn:hover .protocol-btn__brand,
+.protocol-btn:hover .protocol-btn__sub {
+  opacity: 1;
+  color: #7dffad;
+}
+
+.protocol-btn:hover .protocol-btn__word {
+  letter-spacing: 0.14em;
+  text-shadow: 0 0 10px rgba(92, 255, 154, 0.35);
+}
+
+.protocol-btn:hover .protocol-btn__sub {
+  border-top-color: rgba(125, 255, 173, 0.75);
 }
 
 .protocol-btn:active {
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) rotate(-16deg) scale(0.96);
+  filter: brightness(0.95);
 }
 
-@keyframes protocol-pulse {
-  0%, 100% {
-    box-shadow:
-      0 0 0 1px rgba(92, 255, 154, 0.25),
-      0 12px 40px rgba(0, 0, 0, 0.45),
-      0 0 48px rgba(92, 255, 154, 0.28);
+@keyframes stamp-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -42%) rotate(-28deg) scale(1.18);
   }
-  50% {
-    box-shadow:
-      0 0 0 1px rgba(92, 255, 154, 0.45),
-      0 12px 40px rgba(0, 0, 0, 0.45),
-      0 0 72px rgba(92, 255, 154, 0.45);
+  70% {
+    opacity: 0.95;
+    transform: translate(-50%, -50%) rotate(-12deg) scale(0.97);
+  }
+  to {
+    opacity: 0.92;
+    transform: translate(-50%, -50%) rotate(-14deg) scale(1);
   }
 }
 
@@ -759,17 +876,30 @@ img {
   .protocol-btn {
     top: auto;
     left: 50%;
-    bottom: 5.5rem;
-    transform: translate(-50%, 0);
-    animation: rise 0.9s var(--ease) 0.4s both;
+    bottom: 4.75rem;
+    width: 7rem;
+    height: 7rem;
+    transform: translate(-50%, 0) rotate(-12deg);
+    animation: stamp-in-mobile 0.85s var(--ease) 0.35s both;
   }
 
   .protocol-btn:hover {
-    transform: translate(-50%, -3px);
+    transform: translate(-50%, -4px) rotate(-7deg) scale(1.07);
   }
 
   .protocol-btn:active {
-    transform: translate(-50%, 0);
+    transform: translate(-50%, 0) rotate(-14deg) scale(0.96);
+  }
+}
+
+@keyframes stamp-in-mobile {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12%) rotate(-26deg) scale(1.14);
+  }
+  to {
+    opacity: 0.92;
+    transform: translate(-50%, 0) rotate(-12deg) scale(1);
   }
 }
 

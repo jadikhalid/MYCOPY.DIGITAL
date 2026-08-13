@@ -1,8 +1,8 @@
 # MYCOPY.DIGITAL
 
-Page vitrine PHP : **entraînez une IA à être vous**, avec file d’attente par ticket (e-mail SMTP).
+PHP landing page: **train an AI to be you**, with a waitlist ticket (SMTP email).
 
-## Lancer en local
+## Run locally
 
 ```bash
 php -S localhost:8080 -t .
@@ -10,18 +10,18 @@ php -S localhost:8080 -t .
 
 ## SMTP
 
-1. Copiez `config.smtp.example.php` → `config.smtp.php`
-2. Renseignez host, port, identifiants, expéditeur
+1. Copy `config.smtp.example.php` → `config.smtp.php`
+2. Fill in host, port, credentials, and sender
 
-Le ticket n’est **jamais** affiché à l’écran : il part uniquement par e-mail.
+The ticket is **never** shown on screen: it is sent by email only.
 
 ## Pages
 
-| Fichier | Rôle |
-|---------|------|
-| `index.php` | Accès studio (code) |
-| `attente.php` | Inscription file d’attente + toasts |
-| `reserve.php` | Traitement inscription |
-| `mail/SmtpMailer.php` | Client SMTP |
-| `vault.php` | Studio privé |
-| `data/mycopy.sqlite` | Base (auto) |
+| File | Role |
+|------|------|
+| `index.php` | Studio access (code) |
+| `attente.php` | Waitlist signup + toasts |
+| `reserve.php` | Signup handler |
+| `mail/SmtpMailer.php` | SMTP client |
+| `vault.php` | Private studio |
+| `data/mycopy.sqlite` | Database (auto-created) |

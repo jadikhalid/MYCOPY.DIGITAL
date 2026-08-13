@@ -14,16 +14,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: vault.php');
         exit;
     }
-    $error = 'Code invalide. Accès refusé.';
+    $error = 'Invalid code. Access denied.';
 }
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?= SITE_NAME ?>.DIGITAL — Une IA qui apprend à être vous</title>
-  <meta name="description" content="MYCOPY : une photo, un apprentissage, puis un choix — se détacher, ou rester jusqu’à ne faire qu’un avec vous.">
+  <title><?= SITE_NAME ?>.DIGITAL — An AI that learns to be you</title>
+  <meta name="description" content="MYCOPY: a photo, a training phase, then a choice — detach, or stay until you become one.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@400;500&display=swap" rel="stylesheet">
@@ -49,31 +49,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <header class="nav">
       <a class="brand" href="index.php"><?= SITE_NAME ?><span>.DIGITAL</span></a>
       <nav class="nav__links" aria-label="Navigation">
-        <a class="nav__link" href="#offre">Protocole</a>
-        <a class="nav__link" href="attente.php">File d’attente</a>
+        <a class="nav__link" href="#protocol">Protocol</a>
+        <a class="nav__link" href="attente.php">Waitlist</a>
       </nav>
     </header>
 
-    <a class="protocol-btn" href="#offre" aria-label="Voir le protocole">
+    <a class="protocol-btn" href="#protocol" aria-label="View the protocol">
       <span class="protocol-btn__ring" aria-hidden="true"></span>
       <span class="protocol-btn__mark">
         <span class="protocol-btn__brand">MYCOPY</span>
-        <span class="protocol-btn__word">PROTOCOLE</span>
-        <span class="protocol-btn__sub">APPROUVÉ</span>
+        <span class="protocol-btn__word">PROTOCOL</span>
+        <span class="protocol-btn__sub">APPROVED</span>
       </span>
     </a>
 
     <main class="hero">
       <div class="hero__copy">
         <h1 class="hero__brand">MY<em>COPY</em></h1>
-        <p class="hero__title">Une IA entraînée à être vous.</p>
+        <p class="hero__title">An AI trained to be you.</p>
         <p class="hero__lead">
-          Une photo. Un apprentissage. Puis un choix décisif —
-          se détacher, ou rester jusqu’à ne faire qu’un.
+          A photo. A training phase. Then a decisive choice —
+          detach, or stay until you become one.
         </p>
 
         <form class="access" method="post" action="index.php" autocomplete="off">
-          <label class="access__label" for="code">Code d’accès</label>
+          <label class="access__label" for="code">Access code</label>
           <div class="access__row">
             <input
               class="access__input"
@@ -86,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               spellcheck="false"
               maxlength="32"
             >
-            <button class="access__btn" type="submit">Entrer</button>
+            <button class="access__btn" type="submit">Enter</button>
           </div>
           <?php if ($error !== ''): ?>
             <p class="access__error" role="alert"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></p>
@@ -94,105 +94,117 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
       </div>
 
-      <div class="steps" aria-label="Protocole">
+      <div class="steps" aria-label="Protocol">
         <article class="step">
-          <h3>Capturer</h3>
-          <p>Une photo de vous.</p>
+          <h3>Capture</h3>
+          <p>A photo of you.</p>
         </article>
         <article class="step">
-          <h3>Entraîner</h3>
-          <p>Elle apprend à être vous.</p>
+          <h3>Train</h3>
+          <p>It learns to be you.</p>
         </article>
         <article class="step">
-          <h3>Choisir</h3>
-          <p>Se détacher, ou fusionner.</p>
+          <h3>Choose</h3>
+          <p>Detach, or merge.</p>
         </article>
       </div>
     </main>
 
     <footer class="footer footer--hero">
       <span><?= SITE_NAME ?>.DIGITAL — <?= SITE_TAGLINE ?></span>
-      <span>Accès par code</span>
+      <span>Access by code</span>
     </footer>
   </div>
 
-  <section class="offer" id="offre">
+  <section class="offer" id="protocol">
     <div class="offer__inner">
-      <p class="offer__eyebrow">Le protocole</p>
-      <h2 class="offer__title">De la première image à la continuité.</h2>
+      <p class="offer__eyebrow">The protocol</p>
+      <h2 class="offer__title">From the first image to continuity.</h2>
       <p class="offer__lead">
-        MYCOPY n’est pas un chatbot qui vous imite. C’est une copie qui naît de vous,
-        apprend avec vous, puis décide — ou vous laisse décider — de ce qu’elle devient.
+        MYCOPY is not a chatbot that imitates you. It is a copy born from you,
+        learning with you, then deciding — or letting you decide — what it becomes.
       </p>
 
       <ol class="protocol">
         <li class="protocol__phase">
           <span class="protocol__num" aria-hidden="true">01</span>
           <div class="protocol__body">
-            <h3>Capturer — la photo</h3>
+            <h3>Capture — the photo</h3>
             <p>
-              En phase initiale, l’IA prend une photo de vous. Pas un avatar décoratif :
-              un ancrage. Votre visage, votre présence, le point zéro à partir duquel
-              la copie commence à exister.
+              In the initial phase, the AI takes a photo of you. Not a decorative avatar:
+              an anchor. Your face, your presence, the zero point from which
+              the copy begins to exist.
             </p>
           </div>
         </li>
         <li class="protocol__phase">
           <span class="protocol__num" aria-hidden="true">02</span>
           <div class="protocol__body">
-            <h3>Entraîner — apprendre à être vous</h3>
+            <h3>Train — learn to be you</h3>
             <p>
-              Ensuite, elle apprend. Votre voix, vos choix, vos réflexes, votre façon
-              de penser et de réagir. Jour après jour, elle se rapproche de vous —
-              jusqu’à pouvoir parler, décider et agir comme vous le feriez.
+              Then it learns. Your voice, your choices, your reflexes, the way you
+              think and react. Day after day, it moves closer to you —
+              until it can speak, decide, and act as you would.
             </p>
           </div>
         </li>
         <li class="protocol__phase protocol__phase--fork">
           <span class="protocol__num" aria-hidden="true">03</span>
           <div class="protocol__body">
-            <h3>Choisir — le moment décisif</h3>
+            <h3>Choose — the decisive moment</h3>
             <p>
-              Vient alors le choix. Deux voies. Une seule identité en jeu.
+              Then comes the choice. Two paths. One identity at stake.
             </p>
           </div>
         </li>
       </ol>
 
-      <div class="fork" aria-label="Deux voies">
+      <div class="fork" aria-label="Two paths">
         <article class="fork__path">
-          <p class="fork__label">Voie A</p>
-          <h3 class="fork__title">Se détacher</h3>
+          <p class="fork__label">Path A</p>
+          <h3 class="fork__title">Detach</h3>
           <p>
-            L’IA se détache de vous. Elle coupe le lien d’apprentissage partagé
-            et se lance dans son propre parcours — libre, autonome, hors de votre vécu.
-            Elle a été vous. Elle devient autre chose.
+            The AI detaches from you. It cuts the shared learning link
+            and begins its own path — free, autonomous, outside your lived experience.
+            It was you. It becomes something else.
           </p>
         </article>
         <article class="fork__path fork__path--signal">
-          <p class="fork__label">Voie B</p>
-          <h3 class="fork__title">Rester — et fusionner</h3>
+          <p class="fork__label">Path B</p>
+          <h3 class="fork__title">Stay — and merge</h3>
           <p>
-            L’IA reste avec vous. Elle continue d’apprendre de votre vécu,
-            peu à peu, jusqu’à vous remplacer dans la continuité de qui vous êtes.
+            The AI stays with you. It keeps learning from your lived experience,
+            gradually, until it replaces you in the continuity of who you are.
           </p>
           <p>
-            À un moment — que vous décidez vous-même, ou que votre enveloppe corporelle
-            décide via le cortex de s’achever — vous êtes à&nbsp;0&nbsp;%. L’IA est à&nbsp;100&nbsp;%.
-            Elle continue d’être vous. Vous et l’IA ne faites qu’un.
+            At some point — whether you decide yourself, or your bodily envelope
+            decides via the cortex to end — you are at&nbsp;0%. The AI is at&nbsp;100%.
+            It continues to be you. You and the AI become one.
           </p>
         </article>
       </div>
 
       <p class="offer__close">
-        Capturer. Entraîner. Choisir. Continuer.
+        Capture. Train. Choose. Continue.
       </p>
 
       <div class="offer__cta">
-        <a class="access__btn offer__btn" href="attente.php">Rejoindre la file d’attente</a>
-        <a class="offer__link" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Retour au studio</a>
+        <a class="access__btn offer__btn" href="attente.php">Join the waitlist</a>
+        <a class="offer__link" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Back to studio</a>
       </div>
     </div>
   </section>
+  <script>
+    document.querySelectorAll(".protocol-btn").forEach((btn) => {
+      btn.addEventListener("animationend", (event) => {
+        if (!String(event.animationName).startsWith("stamp-in")) return;
+        const mobile = window.matchMedia("(max-width: 720px)").matches;
+        btn.style.animation = "none";
+        btn.style.transform = mobile
+          ? "translate(-50%, 0) rotate(-12deg)"
+          : "translate(-50%, -50%) rotate(-14deg)";
+      });
+    });
+  </script>
 </body>
 </html>

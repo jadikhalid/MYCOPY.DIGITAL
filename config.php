@@ -1,6 +1,6 @@
 <?php
 /**
- * MYCOPY.DIGITAL — configuration minimale
+ * MYCOPY.DIGITAL — minimal configuration
  */
 
 declare(strict_types=1);
@@ -8,9 +8,9 @@ declare(strict_types=1);
 session_start();
 
 const SITE_NAME = 'MYCOPY';
-const SITE_TAGLINE = 'Capturer. Entraîner. Choisir. Continuer.';
+const SITE_TAGLINE = 'Capture. Train. Choose. Continue.';
 
-/** Codes d'accès valides (en production : stocker hashés) */
+/** Valid access codes (in production: store hashed) */
 const ACCESS_CODES = [
     'NEURAL-01',
     'TRAIN-7',

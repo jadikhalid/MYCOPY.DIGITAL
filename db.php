@@ -1,6 +1,6 @@
 <?php
 /**
- * MYCOPY.DIGITAL — base SQLite (file d'attente)
+ * MYCOPY.DIGITAL — SQLite waitlist
  */
 
 declare(strict_types=1);
@@ -69,8 +69,8 @@ function reserve_place(string $name, string $email): array
             'keep_form' => true,
             'toast' => [
                 'type' => 'error',
-                'title' => 'Inscription impossible',
-                'message' => 'Indiquez votre nom complet.',
+                'title' => 'Signup failed',
+                'message' => 'Please enter your full name.',
             ],
         ];
     }
@@ -81,8 +81,8 @@ function reserve_place(string $name, string $email): array
             'keep_form' => true,
             'toast' => [
                 'type' => 'error',
-                'title' => 'Inscription impossible',
-                'message' => 'Adresse e-mail invalide.',
+                'title' => 'Signup failed',
+                'message' => 'Invalid email address.',
             ],
         ];
     }
@@ -93,8 +93,8 @@ function reserve_place(string $name, string $email): array
             'keep_form' => true,
             'toast' => [
                 'type' => 'error',
-                'title' => 'Inscription impossible',
-                'message' => 'Données trop longues.',
+                'title' => 'Signup failed',
+                'message' => 'Input is too long.',
             ],
         ];
     }
@@ -116,8 +116,8 @@ function reserve_place(string $name, string $email): array
                 'ok' => true,
                 'toast' => [
                     'type' => 'success',
-                    'title' => 'Déjà inscrit',
-                    'message' => 'Votre ticket a été renvoyé par e-mail.',
+                    'title' => 'Already registered',
+                    'message' => 'Your ticket was resent by email.',
                 ],
             ];
         }
@@ -126,8 +126,8 @@ function reserve_place(string $name, string $email): array
             'ok' => false,
             'toast' => [
                 'type' => 'error',
-                'title' => 'Envoi échoué',
-                'message' => 'Compte déjà inscrit, mais l’e-mail n’a pas pu être envoyé. Réessayez plus tard.',
+                'title' => 'Send failed',
+                'message' => 'You are already on the list, but the email could not be sent. Try again later.',
             ],
         ];
     }
@@ -161,8 +161,8 @@ function reserve_place(string $name, string $email): array
             'keep_form' => true,
             'toast' => [
                 'type' => 'error',
-                'title' => 'Inscription échouée',
-                'message' => 'Impossible d’enregistrer votre place. Réessayez.',
+                'title' => 'Signup failed',
+                'message' => 'Could not save your place. Please try again.',
             ],
         ];
     }
@@ -177,8 +177,8 @@ function reserve_place(string $name, string $email): array
             'ok' => true,
             'toast' => [
                 'type' => 'success',
-                'title' => 'Inscription confirmée',
-                'message' => 'Votre ticket a été envoyé par e-mail. Vérifiez votre boîte de réception.',
+                'title' => 'Signup confirmed',
+                'message' => 'Your ticket was sent by email. Check your inbox.',
             ],
         ];
     }
@@ -187,20 +187,20 @@ function reserve_place(string $name, string $email): array
         'ok' => false,
         'toast' => [
             'type' => 'error',
-            'title' => 'Envoi échoué',
-            'message' => 'Inscription enregistrée, mais le ticket n’a pas pu être envoyé. Contactez le support ou réessayez.',
+            'title' => 'Send failed',
+            'message' => 'Signup saved, but the ticket email could not be sent. Contact support or try again.',
         ],
     ];
 }
 
 function send_ticket_email(string $email, string $name, string $ticket): bool
 {
-    $subject = 'MYCOPY — votre ticket file d’attente';
-    $body = "Bonjour {$name},\n\n"
-        . "Votre place dans la file d’attente MYCOPY est réservée.\n\n"
-        . "Numéro de ticket : {$ticket}\n\n"
-        . "Conservez ce numéro : il vous permettra d’entrer dans le processus d’entraînement.\n"
-        . "Ne partagez ce ticket avec personne.\n\n"
+    $subject = 'MYCOPY — your waitlist ticket';
+    $body = "Hello {$name},\n\n"
+        . "Your place on the MYCOPY waitlist is reserved.\n\n"
+        . "Ticket number: {$ticket}\n\n"
+        . "Keep this number — it will let you enter the training process.\n"
+        . "Do not share this ticket with anyone.\n\n"
         . "— MYCOPY.DIGITAL\n";
 
     $mailer = smtp_mailer();

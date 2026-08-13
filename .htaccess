@@ -1,4 +1,4 @@
-# Sécurité minimale Hostinger / Apache
+# Minimal Hostinger / Apache security
 Options -Indexes
 
 <FilesMatch "\.(sqlite|sqlite3|db|env)$">
@@ -6,10 +6,10 @@ Options -Indexes
 </FilesMatch>
 
 <FilesMatch "^(config\.smtp\.php|config\.php|db\.php)$">
-  # Les .php restent exécutables ; on bloque surtout les dumps
+  # .php files remain executable; mainly block dumps
 </FilesMatch>
 
-# Empêcher le listing / téléchargement direct de config SMTP si servi en static
+# Block direct download of SMTP config if served as static
 <Files "config.smtp.php">
   Require all denied
 </Files>

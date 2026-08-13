@@ -17,12 +17,12 @@ $toastTitle = is_array($toast) ? (string) ($toast['title'] ?? '') : '';
 $toastMessage = is_array($toast) ? (string) ($toast['message'] ?? '') : '';
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>File d’attente — <?= SITE_NAME ?>.DIGITAL</title>
-  <meta name="description" content="Réservez votre place dans la file d’attente MYCOPY.">
+  <title>Waitlist — <?= SITE_NAME ?>.DIGITAL</title>
+  <meta name="description" content="Reserve your place on the MYCOPY waitlist.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@400;500&display=swap" rel="stylesheet">
@@ -47,43 +47,43 @@ $toastMessage = is_array($toast) ? (string) ($toast['message'] ?? '') : '';
 
     <header class="nav">
       <a class="brand" href="index.php"><?= SITE_NAME ?><span>.DIGITAL</span></a>
-      <a class="nav__link" href="index.php">Accès</a>
+      <a class="nav__link" href="index.php">Access</a>
     </header>
 
     <main class="hero">
       <div class="hero__copy">
-        <p class="vault__badge">File d’attente</p>
-        <h1 class="access-page__title">Réservez votre place</h1>
+        <p class="vault__badge">Waitlist</p>
+        <h1 class="access-page__title">Reserve your place</h1>
         <p class="hero__lead">
-          Votre ticket est envoyé uniquement par e-mail après inscription.
+          Your ticket is sent by email only after you sign up.
         </p>
 
         <form class="access reserve" method="post" action="reserve.php" autocomplete="on">
-          <label class="access__label" for="name">Nom</label>
+          <label class="access__label" for="name">Name</label>
           <input
             class="access__input access__input--full"
             type="text"
             id="name"
             name="name"
-            placeholder="Prénom Nom"
+            placeholder="First Last"
             required
             maxlength="120"
             autofocus
             value="<?= htmlspecialchars((string) ($form['name'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
           >
-          <label class="access__label" for="email">E-mail</label>
+          <label class="access__label" for="email">Email</label>
           <input
             class="access__input access__input--full"
             type="email"
             id="email"
             name="email"
-            placeholder="vous@exemple.com"
+            placeholder="you@example.com"
             required
             maxlength="180"
             value="<?= htmlspecialchars((string) ($form['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
           >
           <div class="access__row access__row--end">
-            <button class="access__btn" type="submit">Obtenir mon ticket</button>
+            <button class="access__btn" type="submit">Get my ticket</button>
           </div>
         </form>
       </div>
@@ -91,7 +91,7 @@ $toastMessage = is_array($toast) ? (string) ($toast['message'] ?? '') : '';
 
     <footer class="footer">
       <span><?= SITE_NAME ?>.DIGITAL — <?= SITE_TAGLINE ?></span>
-      <span>Inscription file d’attente</span>
+      <span>Waitlist signup</span>
     </footer>
   </div>
 

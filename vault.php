@@ -7,7 +7,7 @@ $since = (int) ($_SESSION['mycopy_at'] ?? time());
 $stamp = date('Y-m-d H:i:s', $since);
 ?>
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -40,34 +40,34 @@ $stamp = date('Y-m-d H:i:s', $since);
     </header>
 
     <main class="vault">
-      <p class="vault__badge">Studio // accès accordé</p>
-      <h1 class="vault__title">Votre modèle est prêt à apprendre.</h1>
+      <p class="vault__badge">Studio // access granted</p>
+      <h1 class="vault__title">Your model is ready to learn.</h1>
       <p class="vault__text">
-        Le code <strong style="color:var(--bone);font-weight:500"><?= htmlspecialchars($code, ENT_QUOTES, 'UTF-8') ?></strong>
-        ouvre ce studio. Déposez vos traces — messages, voix, décisions —
-        et l’IA s’entraîne à devenir votre copie.
+        Code <strong style="color:var(--bone);font-weight:500"><?= htmlspecialchars($code, ENT_QUOTES, 'UTF-8') ?></strong>
+        opens this studio. Drop your traces — messages, voice, decisions —
+        and the AI trains to become your copy.
       </p>
 
       <div class="console" aria-live="polite">
         <div><span class="dim">$</span> mycopy status</div>
-        <div class="ok">● studio ouvert</div>
+        <div class="ok">● studio open</div>
         <div>auth …… <?= htmlspecialchars($code, ENT_QUOTES, 'UTF-8') ?></div>
         <div>since … <?= htmlspecialchars($stamp, ENT_QUOTES, 'UTF-8') ?></div>
         <div>node …… train-01.mycopy.digital</div>
-        <div>state … IDLE — en attente de données</div>
+        <div>state … IDLE — awaiting data</div>
         <div><span class="dim">$</span> <span class="cursor" aria-hidden="true"></span></div>
       </div>
 
       <div class="vault__actions">
         <form method="post" action="logout.php">
-          <button class="btn-ghost" type="submit">Fermer la session</button>
+          <button class="btn-ghost" type="submit">End session</button>
         </form>
       </div>
     </main>
 
     <footer class="footer">
-      <span><?= SITE_NAME ?>.DIGITAL — espace privé</span>
-      <span>Ne partagez pas votre code</span>
+      <span><?= SITE_NAME ?>.DIGITAL — private space</span>
+      <span>Do not share your code</span>
     </footer>
   </div>
 </body>

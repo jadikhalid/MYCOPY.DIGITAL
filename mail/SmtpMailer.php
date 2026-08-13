@@ -1,6 +1,6 @@
 <?php
 /**
- * Client SMTP minimal (AUTH LOGIN, STARTTLS / SSL).
+ * Minimal SMTP client (AUTH LOGIN, STARTTLS / SSL).
  */
 
 declare(strict_types=1);
@@ -43,12 +43,12 @@ final class SmtpMailer
         $this->lastError = '';
 
         if ($this->host === '' || $this->fromEmail === '') {
-            $this->lastError = 'Configuration SMTP incomplète.';
+            $this->lastError = 'Incomplete SMTP configuration.';
             return false;
         }
 
         if (!filter_var($toEmail, FILTER_VALIDATE_EMAIL)) {
-            $this->lastError = 'Destinataire invalide.';
+            $this->lastError = 'Invalid recipient.';
             return false;
         }
 
@@ -63,7 +63,7 @@ final class SmtpMailer
                 $this->command('STARTTLS');
                 $this->expect([220]);
                 if (!stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
-                    throw new RuntimeException('Échec du handshake TLS.');
+                    throw new RuntimeException('TLS handshake failed.');
                 }
                 $this->command('EHLO mycopy.digital');
                 $this->expect([250]);
@@ -124,7 +124,7 @@ final class SmtpMailer
         );
 
         if ($socket === false) {
-            throw new RuntimeException("Connexion SMTP impossible ({$errno}): {$errstr}");
+            throw new RuntimeException("SMTP connection failed ({$errno}): {$errstr}");
         }
 
         stream_set_timeout($socket, $this->timeout);
@@ -134,7 +134,7 @@ final class SmtpMailer
     private function command(string $line): void
     {
         if ($this->socket === null) {
-            throw new RuntimeException('Socket SMTP fermée.');
+            throw new RuntimeException('SMTP socket closed.');
         }
         fwrite($this->socket, $line . "\r\n");
     }
@@ -146,7 +146,7 @@ final class SmtpMailer
         $code = (int) substr($response, 0, 3);
 
         if (!in_array($code, $codes, true)) {
-            throw new RuntimeException('Réponse SMTP inattendue: ' . trim($response));
+            throw new RuntimeException('Unexpected SMTP response: ' . trim($response));
         }
 
         return $response;
@@ -155,7 +155,7 @@ final class SmtpMailer
     private function readResponse(): string
     {
         if ($this->socket === null) {
-            throw new RuntimeException('Socket SMTP fermée.');
+            throw new RuntimeException('SMTP socket closed.');
         }
 
         $data = '';
@@ -167,7 +167,7 @@ final class SmtpMailer
         }
 
         if ($data === '') {
-            throw new RuntimeException('Aucune réponse du serveur SMTP.');
+            throw new RuntimeException('No response from SMTP server.');
         }
 
         return $data;
