@@ -874,32 +874,7 @@ img {
 
 @media (max-width: 720px) {
   .protocol-btn {
-    top: auto;
-    left: 50%;
-    bottom: 4.75rem;
-    width: 7rem;
-    height: 7rem;
-    transform: translate(-50%, 0) rotate(-12deg);
-    animation: stamp-in-mobile 0.85s var(--ease) 0.35s both;
-  }
-
-  .protocol-btn:hover {
-    transform: translate(-50%, -4px) rotate(-7deg) scale(1.07);
-  }
-
-  .protocol-btn:active {
-    transform: translate(-50%, 0) rotate(-14deg) scale(0.96);
-  }
-}
-
-@keyframes stamp-in-mobile {
-  from {
-    opacity: 0;
-    transform: translate(-50%, 12%) rotate(-26deg) scale(1.14);
-  }
-  to {
-    opacity: 0.92;
-    transform: translate(-50%, 0) rotate(-12deg) scale(1);
+    display: none;
   }
 }
 
