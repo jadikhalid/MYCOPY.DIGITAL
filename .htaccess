@@ -17,3 +17,11 @@ Options -Indexes
 <Files "config.smtp.example.php">
   Require all denied
 </Files>
+
+<Files "config.admin.php">
+  Require all denied
+</Files>
+
+<Files "config.admin.example.php">
+  Require all denied
+</Files>

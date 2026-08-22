@@ -1055,3 +1055,225 @@ img {
     grid-template-columns: 1fr;
   }
 }
+
+/* —— Admin panel —— */
+body.page-admin {
+  height: auto;
+  min-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: var(--ink);
+}
+
+.admin-shell {
+  max-width: 28rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 6vh, 4rem) var(--pad-x) 3rem;
+}
+
+.admin-shell--wide {
+  max-width: 1100px;
+}
+
+.admin-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 0.5rem;
+}
+
+.admin-title {
+  font-family: var(--font-display);
+  font-weight: 750;
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  letter-spacing: -0.03em;
+  margin-bottom: 0.75rem;
+}
+
+.admin-lead {
+  color: var(--fog);
+  margin-bottom: 1.25rem;
+  max-width: 42ch;
+}
+
+.admin-code {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  background: rgba(232, 235, 230, 0.05);
+  border: 1px solid var(--line);
+  padding: 0.85rem 1rem;
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+.admin-back {
+  margin-top: 1.5rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+}
+
+.admin-back a,
+.admin-link {
+  color: var(--fog);
+  border-bottom: 1px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.admin-back a:hover,
+.admin-link:hover {
+  color: var(--signal);
+  border-bottom-color: rgba(92, 255, 154, 0.35);
+}
+
+.admin-form {
+  max-width: 100%;
+}
+
+.admin-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.admin-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin-stat {
+  border: 1px solid var(--line);
+  background: rgba(232, 235, 230, 0.03);
+  padding: 0.85rem 1rem;
+}
+
+.admin-stat__label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fog);
+  margin-bottom: 0.35rem;
+}
+
+.admin-stat strong {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+}
+
+.admin-flash {
+  border: 1px solid var(--line);
+  padding: 0.85rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.admin-flash--success {
+  border-color: rgba(92, 255, 154, 0.35);
+  background: rgba(92, 255, 154, 0.08);
+  color: var(--bone);
+}
+
+.admin-flash--error {
+  border-color: rgba(255, 107, 74, 0.35);
+  background: rgba(255, 107, 74, 0.08);
+  color: var(--bone);
+}
+
+.admin-empty {
+  color: var(--fog);
+  padding: 2rem 0;
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 0.75rem 0.85rem;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+
+.admin-table th {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fog);
+  background: rgba(232, 235, 230, 0.03);
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table code {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--signal);
+}
+
+.admin-muted {
+  color: var(--fog);
+  font-size: 0.82rem;
+}
+
+.admin-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.45rem;
+  border: 1px solid var(--line);
+}
+
+.admin-badge--wait {
+  color: var(--fog);
+}
+
+.admin-badge--ok {
+  color: var(--signal);
+  border-color: rgba(92, 255, 154, 0.35);
+}
+
+.admin-inline-form {
+  display: inline;
+}
+
+.admin-btn-sm {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.72rem;
+}
+
+@media (max-width: 720px) {
+  .admin-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-header {
+    flex-direction: column;
+  }
+}

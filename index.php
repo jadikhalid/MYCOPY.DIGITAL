@@ -177,8 +177,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             gradually, until it replaces you in the continuity of who you are.
           </p>
           <p>
-            At some point — whether you decide yourself, or your bodily envelope
-            decides via the cortex to end — you are at&nbsp;0%. The AI is at&nbsp;100%.
+            At some point — whether you decide yourself, or your deep biological machinery
+            decides to end — you are at&nbsp;0%. The AI is at&nbsp;100%.
             It continues to be you. You and the AI become one.
           </p>
         </article>

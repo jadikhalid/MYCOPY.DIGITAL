@@ -10,7 +10,7 @@ session_start();
 const SITE_NAME = 'MYCOPY';
 const SITE_TAGLINE = 'Capture. Train. Choose. Continue.';
 
-/** Valid access codes (in production: store hashed) */
+/** Bootstrap studio codes (optional; DB-issued codes are primary) */
 const ACCESS_CODES = [
     'NEURAL-01',
     'TRAIN-7',
@@ -33,13 +33,31 @@ function require_auth(): void
 function attempt_login(string $code): bool
 {
     $normalized = strtoupper(trim($code));
+    if ($normalized === '') {
+        return false;
+    }
+
     if (in_array($normalized, ACCESS_CODES, true)) {
         $_SESSION['mycopy_auth'] = true;
         $_SESSION['mycopy_code'] = $normalized;
         $_SESSION['mycopy_at'] = time();
+        $_SESSION['mycopy_waitlist_id'] = null;
         return true;
     }
-    return false;
+
+    require_once __DIR__ . '/db.php';
+    $access = find_studio_access($normalized);
+
+    if ($access === null) {
+        return false;
+    }
+
+    $_SESSION['mycopy_auth'] = true;
+    $_SESSION['mycopy_code'] = (string) $access['studio_code'];
+    $_SESSION['mycopy_at'] = time();
+    $_SESSION['mycopy_waitlist_id'] = (int) $access['id'];
+
+    return true;
 }
 
 function logout(): void
