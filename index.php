@@ -5,17 +5,6 @@ if (is_authenticated()) {
     header('Location: vault.php');
     exit;
 }
-
-$error = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $code = (string) ($_POST['code'] ?? '');
-    if (attempt_login($code)) {
-        header('Location: vault.php');
-        exit;
-    }
-    $error = 'Invalid code. Access denied.';
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -72,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           detach, or stay until you become one.
         </p>
 
-        <form class="access" method="post" action="index.php" autocomplete="off">
+        <form class="access access--ajax" method="post" action="index.php" autocomplete="off" novalidate>
           <label class="access__label" for="code">Access code</label>
           <div class="access__row">
             <input
@@ -86,11 +75,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               spellcheck="false"
               maxlength="32"
             >
-            <button class="access__btn" type="submit">Enter</button>
+            <button class="access__btn" type="submit">
+              <span class="access__btn-label">Enter</span>
+              <span class="access__btn-spinner" aria-hidden="true"></span>
+            </button>
           </div>
-          <?php if ($error !== ''): ?>
-            <p class="access__error" role="alert"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?></p>
-          <?php endif; ?>
+          <p class="access__error" role="alert" hidden></p>
         </form>
       </div>
 
@@ -194,6 +184,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </div>
     </div>
   </section>
+  <script src="assets/access.js" defer></script>
   <script>
     document.querySelectorAll(".protocol-btn").forEach((btn) => {
       btn.addEventListener("animationend", (event) => {
