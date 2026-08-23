@@ -69,7 +69,9 @@
     }
 
     const stripe = window.Stripe(pk);
-    checkout = await stripe.initEmbeddedCheckout({ clientSecret });
+    checkout = await stripe.createEmbeddedCheckoutPage({
+      fetchClientSecret: async () => clientSecret,
+    });
     checkout.mount("#checkout-mount");
   }
 

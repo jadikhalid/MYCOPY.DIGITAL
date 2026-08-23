@@ -108,7 +108,7 @@ function stripe_create_checkout_session(array $customer): array
 
     $result = stripe_request('POST', 'checkout/sessions', [
         'mode' => 'payment',
-        'ui_mode' => 'embedded',
+        'ui_mode' => 'embedded_page',
         'return_url' => $siteUrl . '/payments/success.php?session_id={CHECKOUT_SESSION_ID}',
         'customer_email' => $customer['email'],
         'client_reference_id' => (string) $customer['waitlist_id'],
