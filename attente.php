@@ -15,6 +15,8 @@ unset($_SESSION['toast'], $_SESSION['flash_form']);
 $toastType = is_array($toast) ? (string) ($toast['type'] ?? 'success') : '';
 $toastTitle = is_array($toast) ? (string) ($toast['title'] ?? '') : '';
 $toastMessage = is_array($toast) ? (string) ($toast['message'] ?? '') : '';
+
+$amountLabel = '$49';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -22,7 +24,7 @@ $toastMessage = is_array($toast) ? (string) ($toast['message'] ?? '') : '';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Waitlist — <?= SITE_NAME ?>.DIGITAL</title>
-  <meta name="description" content="Reserve your place on the MYCOPY waitlist.">
+  <meta name="description" content="Reserve your MYCOPY waitlist place for $49 — includes protocol PDF.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@400;500&display=swap" rel="stylesheet">
@@ -52,10 +54,11 @@ $toastMessage = is_array($toast) ? (string) ($toast['message'] ?? '') : '';
 
     <main class="hero">
       <div class="hero__copy">
-        <p class="vault__badge">Waitlist</p>
+        <p class="vault__badge">Waitlist · <?= htmlspecialchars($amountLabel, ENT_QUOTES, 'UTF-8') ?> USD</p>
         <h1 class="access-page__title">Reserve your place</h1>
         <p class="hero__lead">
-          Your ticket is sent by email only after you sign up.
+          <?= htmlspecialchars($amountLabel, ENT_QUOTES, 'UTF-8') ?> locks your waitlist spot.
+          After payment, your ticket and protocol PDF are sent by email only.
         </p>
 
         <form class="access reserve" method="post" action="reserve.php" autocomplete="on">
@@ -83,15 +86,18 @@ $toastMessage = is_array($toast) ? (string) ($toast['message'] ?? '') : '';
             value="<?= htmlspecialchars((string) ($form['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
           >
           <div class="access__row access__row--end">
-            <button class="access__btn" type="submit">Get my ticket</button>
+            <button class="access__btn" type="submit">Pay <?= htmlspecialchars($amountLabel, ENT_QUOTES, 'UTF-8') ?> — Reserve</button>
           </div>
+          <p class="hero__lead" style="margin-top:0.85rem;margin-bottom:0;font-size:0.78rem;">
+            Secure checkout via Stripe. Includes waitlist reservation + protocol PDF.
+          </p>
         </form>
       </div>
     </main>
 
     <footer class="footer">
       <span><?= SITE_NAME ?>.DIGITAL — <?= SITE_TAGLINE ?></span>
-      <span>Waitlist signup</span>
+      <span>Paid reservation</span>
     </footer>
   </div>
 

@@ -12,12 +12,21 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$result = reserve_place(
+$result = start_checkout_reservation(
     (string) ($_POST['name'] ?? ''),
     (string) ($_POST['email'] ?? '')
 );
 
-$_SESSION['toast'] = $result['toast'];
+if (!empty($result['ok']) && !empty($result['checkout_url'])) {
+    header('Location: ' . $result['checkout_url']);
+    exit;
+}
+
+$_SESSION['toast'] = $result['toast'] ?? [
+    'type' => 'error',
+    'title' => 'Checkout failed',
+    'message' => 'Could not start payment.',
+];
 
 if (!empty($result['keep_form'])) {
     $_SESSION['flash_form'] = [

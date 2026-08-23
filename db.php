@@ -1,11 +1,12 @@
 <?php
 /**
- * MYCOPY.DIGITAL — SQLite waitlist + studio access bridge
+ * MYCOPY.DIGITAL — SQLite waitlist + studio access + paid reservation
  */
 
 declare(strict_types=1);
 
 require_once __DIR__ . '/mail/SmtpMailer.php';
+require_once __DIR__ . '/payments/StripeClient.php';
 
 const DB_PATH = __DIR__ . '/data/mycopy.sqlite';
 
@@ -36,9 +37,15 @@ function db(): PDO
             phone TEXT,
             created_at TEXT NOT NULL,
             notified INTEGER NOT NULL DEFAULT 0,
-            status TEXT NOT NULL DEFAULT \'waiting\',
+            status TEXT NOT NULL DEFAULT \'pending_payment\',
             studio_code TEXT UNIQUE,
-            access_sent_at TEXT
+            access_sent_at TEXT,
+            payment_status TEXT NOT NULL DEFAULT \'unpaid\',
+            stripe_session_id TEXT,
+            amount_cents INTEGER,
+            currency TEXT,
+            paid_at TEXT,
+            pdf_sent INTEGER NOT NULL DEFAULT 0
         )'
     );
 
@@ -56,16 +63,22 @@ function migrate_waitlist_schema(PDO $pdo): void
     $cols = $pdo->query('PRAGMA table_info(waitlist)')->fetchAll();
     $names = array_column($cols, 'name');
 
-    if (!in_array('status', $names, true)) {
-        $pdo->exec("ALTER TABLE waitlist ADD COLUMN status TEXT NOT NULL DEFAULT 'waiting'");
-    }
+    $additions = [
+        'status' => "ALTER TABLE waitlist ADD COLUMN status TEXT NOT NULL DEFAULT 'pending_payment'",
+        'studio_code' => 'ALTER TABLE waitlist ADD COLUMN studio_code TEXT',
+        'access_sent_at' => 'ALTER TABLE waitlist ADD COLUMN access_sent_at TEXT',
+        'payment_status' => "ALTER TABLE waitlist ADD COLUMN payment_status TEXT NOT NULL DEFAULT 'unpaid'",
+        'stripe_session_id' => 'ALTER TABLE waitlist ADD COLUMN stripe_session_id TEXT',
+        'amount_cents' => 'ALTER TABLE waitlist ADD COLUMN amount_cents INTEGER',
+        'currency' => 'ALTER TABLE waitlist ADD COLUMN currency TEXT',
+        'paid_at' => 'ALTER TABLE waitlist ADD COLUMN paid_at TEXT',
+        'pdf_sent' => 'ALTER TABLE waitlist ADD COLUMN pdf_sent INTEGER NOT NULL DEFAULT 0',
+    ];
 
-    if (!in_array('studio_code', $names, true)) {
-        $pdo->exec('ALTER TABLE waitlist ADD COLUMN studio_code TEXT');
-    }
-
-    if (!in_array('access_sent_at', $names, true)) {
-        $pdo->exec('ALTER TABLE waitlist ADD COLUMN access_sent_at TEXT');
+    foreach ($additions as $col => $sql) {
+        if (!in_array($col, $names, true)) {
+            $pdo->exec($sql);
+        }
     }
 
     $pdo->exec(
@@ -116,7 +129,8 @@ function find_studio_access(string $code): ?array
 function fetch_waitlist_entries(): array
 {
     $stmt = db()->query(
-        'SELECT id, ticket, name, email, created_at, notified, status, studio_code, access_sent_at
+        'SELECT id, ticket, name, email, created_at, notified, status, studio_code,
+                access_sent_at, payment_status, amount_cents, currency, paid_at, pdf_sent
          FROM waitlist
          ORDER BY created_at DESC'
     );
@@ -132,13 +146,18 @@ function grant_studio_access(int $waitlistId, bool $resend = false): array
     $pdo = db();
 
     $stmt = $pdo->prepare(
-        'SELECT id, name, email, ticket, status, studio_code FROM waitlist WHERE id = :id LIMIT 1'
+        'SELECT id, name, email, ticket, status, studio_code, payment_status
+         FROM waitlist WHERE id = :id LIMIT 1'
     );
     $stmt->execute(['id' => $waitlistId]);
     $row = $stmt->fetch();
 
     if (!$row) {
         return ['ok' => false, 'message' => 'Waitlist entry not found.'];
+    }
+
+    if (($row['payment_status'] ?? '') !== 'paid') {
+        return ['ok' => false, 'message' => 'Cannot grant studio access before payment.'];
     }
 
     $code = (string) ($row['studio_code'] ?? '');
@@ -189,13 +208,16 @@ function grant_studio_access(int $waitlistId, bool $resend = false): array
 }
 
 /**
+ * Start paid reservation: create/reuse unpaid row, open Stripe Checkout.
+ *
  * @return array{
  *   ok: bool,
- *   toast: array{type: string, title: string, message: string},
+ *   checkout_url?: string,
+ *   toast?: array{type: string, title: string, message: string},
  *   keep_form?: bool
  * }
  */
-function reserve_place(string $name, string $email): array
+function start_checkout_reservation(string $name, string $email): array
 {
     $name = trim(preg_replace('/\s+/u', ' ', $name) ?? '');
     $email = strtolower(trim($email));
@@ -206,7 +228,7 @@ function reserve_place(string $name, string $email): array
             'keep_form' => true,
             'toast' => [
                 'type' => 'error',
-                'title' => 'Signup failed',
+                'title' => 'Reservation failed',
                 'message' => 'Please enter your full name.',
             ],
         ];
@@ -218,7 +240,7 @@ function reserve_place(string $name, string $email): array
             'keep_form' => true,
             'toast' => [
                 'type' => 'error',
-                'title' => 'Signup failed',
+                'title' => 'Reservation failed',
                 'message' => 'Invalid email address.',
             ],
         ];
@@ -230,119 +252,232 @@ function reserve_place(string $name, string $email): array
             'keep_form' => true,
             'toast' => [
                 'type' => 'error',
-                'title' => 'Signup failed',
+                'title' => 'Reservation failed',
                 'message' => 'Input is too long.',
             ],
         ];
     }
 
-    $pdo = db();
-
-    $existing = $pdo->prepare('SELECT ticket, name FROM waitlist WHERE email = :email LIMIT 1');
-    $existing->execute(['email' => $email]);
-    $row = $existing->fetch();
-
-    if ($row) {
-        $sent = send_ticket_email($email, (string) $row['name'], (string) $row['ticket']);
-
-        if ($sent) {
-            $pdo->prepare('UPDATE waitlist SET notified = 1 WHERE email = :email')
-                ->execute(['email' => $email]);
-
-            return [
-                'ok' => true,
-                'toast' => [
-                    'type' => 'success',
-                    'title' => 'Already registered',
-                    'message' => 'Your ticket was resent by email.',
-                ],
-            ];
-        }
-
-        return [
-            'ok' => false,
-            'toast' => [
-                'type' => 'error',
-                'title' => 'Send failed',
-                'message' => 'You are already on the list, but the email could not be sent. Try again later.',
-            ],
-        ];
-    }
-
-    $pdo->beginTransaction();
-
-    try {
-        $stmt = $pdo->prepare(
-            'INSERT INTO waitlist (ticket, name, email, phone, created_at, notified, status)
-             VALUES (:ticket, :name, :email, NULL, :created_at, 0, \'waiting\')'
-        );
-
-        $stmt->execute([
-            'ticket' => 'PENDING',
-            'name' => $name,
-            'email' => $email,
-            'created_at' => gmdate('c'),
-        ]);
-
-        $id = (int) $pdo->lastInsertId();
-        $ticket = generate_ticket($id);
-
-        $upd = $pdo->prepare('UPDATE waitlist SET ticket = :ticket WHERE id = :id');
-        $upd->execute(['ticket' => $ticket, 'id' => $id]);
-
-        $pdo->commit();
-    } catch (Throwable $e) {
-        $pdo->rollBack();
+    if (!stripe_is_configured()) {
         return [
             'ok' => false,
             'keep_form' => true,
             'toast' => [
                 'type' => 'error',
-                'title' => 'Signup failed',
-                'message' => 'Could not save your place. Please try again.',
+                'title' => 'Payments unavailable',
+                'message' => 'Stripe is not configured yet. Please try again later.',
             ],
         ];
     }
 
-    $sent = send_ticket_email($email, $name, $ticket);
+    $pdo = db();
+    $config = stripe_config();
+    $amount = (int) ($config['amount_cents'] ?? 4900);
+    $currency = strtolower((string) ($config['currency'] ?? 'usd'));
 
-    $pdo->prepare('UPDATE waitlist SET notified = :n WHERE ticket = :ticket')
-        ->execute(['n' => $sent ? 1 : 0, 'ticket' => $ticket]);
+    $existing = $pdo->prepare(
+        'SELECT id, ticket, name, email, payment_status, status
+         FROM waitlist WHERE email = :email LIMIT 1'
+    );
+    $existing->execute(['email' => $email]);
+    $row = $existing->fetch();
 
-    if ($sent) {
+    if ($row && ($row['payment_status'] ?? '') === 'paid') {
         return [
-            'ok' => true,
+            'ok' => false,
             'toast' => [
                 'type' => 'success',
-                'title' => 'Signup confirmed',
-                'message' => 'Your ticket was sent by email. Check your inbox.',
+                'title' => 'Already reserved',
+                'message' => 'This email already has a paid waitlist place. Check your inbox for the ticket and PDF.',
             ],
         ];
     }
 
+    if ($row) {
+        $waitlistId = (int) $row['id'];
+        $ticket = (string) $row['ticket'];
+        $pdo->prepare(
+            "UPDATE waitlist
+             SET name = :name, status = 'pending_payment', payment_status = 'unpaid'
+             WHERE id = :id"
+        )->execute(['name' => $name, 'id' => $waitlistId]);
+    } else {
+        try {
+            $pdo->beginTransaction();
+
+            $stmt = $pdo->prepare(
+                "INSERT INTO waitlist (
+                    ticket, name, email, phone, created_at, notified, status,
+                    payment_status, amount_cents, currency, pdf_sent
+                 ) VALUES (
+                    :ticket, :name, :email, NULL, :created_at, 0, 'pending_payment',
+                    'unpaid', :amount_cents, :currency, 0
+                 )"
+            );
+
+            $stmt->execute([
+                'ticket' => 'PENDING',
+                'name' => $name,
+                'email' => $email,
+                'created_at' => gmdate('c'),
+                'amount_cents' => $amount,
+                'currency' => $currency,
+            ]);
+
+            $waitlistId = (int) $pdo->lastInsertId();
+            $ticket = generate_ticket($waitlistId);
+
+            $pdo->prepare('UPDATE waitlist SET ticket = :ticket WHERE id = :id')
+                ->execute(['ticket' => $ticket, 'id' => $waitlistId]);
+
+            $pdo->commit();
+        } catch (Throwable $e) {
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
+            return [
+                'ok' => false,
+                'keep_form' => true,
+                'toast' => [
+                    'type' => 'error',
+                    'title' => 'Reservation failed',
+                    'message' => 'Could not start checkout. Please try again.',
+                ],
+            ];
+        }
+    }
+
+    $checkout = stripe_create_checkout_session([
+        'name' => $name,
+        'email' => $email,
+        'waitlist_id' => $waitlistId,
+        'ticket' => $ticket,
+    ]);
+
+    if (!$checkout['ok']) {
+        return [
+            'ok' => false,
+            'keep_form' => true,
+            'toast' => [
+                'type' => 'error',
+                'title' => 'Checkout failed',
+                'message' => $checkout['error'] ?? 'Could not open Stripe Checkout.',
+            ],
+        ];
+    }
+
+    $pdo->prepare(
+        'UPDATE waitlist
+         SET stripe_session_id = :session_id, amount_cents = :amount, currency = :currency
+         WHERE id = :id'
+    )->execute([
+        'session_id' => $checkout['session_id'],
+        'amount' => $amount,
+        'currency' => $currency,
+        'id' => $waitlistId,
+    ]);
+
     return [
-        'ok' => false,
-        'toast' => [
-            'type' => 'error',
-            'title' => 'Send failed',
-            'message' => 'Signup saved, but the ticket email could not be sent. Contact support or try again.',
-        ],
+        'ok' => true,
+        'checkout_url' => (string) $checkout['url'],
     ];
 }
 
-function send_ticket_email(string $email, string $name, string $ticket): bool
+/**
+ * Mark reservation as paid after Stripe webhook, then email ticket + PDF.
+ *
+ * @return array{ok: bool, message: string}
+ */
+function fulfill_paid_reservation(int $waitlistId, string $sessionId): array
 {
-    $subject = 'MYCOPY — your waitlist ticket';
+    $pdo = db();
+
+    $stmt = $pdo->prepare(
+        'SELECT id, name, email, ticket, payment_status, pdf_sent
+         FROM waitlist WHERE id = :id LIMIT 1'
+    );
+    $stmt->execute(['id' => $waitlistId]);
+    $row = $stmt->fetch();
+
+    if (!$row) {
+        return ['ok' => false, 'message' => 'Waitlist entry not found.'];
+    }
+
+    if (($row['payment_status'] ?? '') === 'paid' && (int) ($row['pdf_sent'] ?? 0) === 1) {
+        return ['ok' => true, 'message' => 'Already fulfilled.'];
+    }
+
+    $config = stripe_config();
+    $amount = (int) ($config['amount_cents'] ?? 4900);
+    $currency = strtolower((string) ($config['currency'] ?? 'usd'));
+
+    $pdo->prepare(
+        "UPDATE waitlist SET
+            payment_status = 'paid',
+            status = 'waiting',
+            stripe_session_id = :session_id,
+            amount_cents = :amount,
+            currency = :currency,
+            paid_at = :paid_at
+         WHERE id = :id"
+    )->execute([
+        'session_id' => $sessionId,
+        'amount' => $amount,
+        'currency' => $currency,
+        'paid_at' => gmdate('c'),
+        'id' => $waitlistId,
+    ]);
+
+    $sent = send_paid_ticket_email(
+        (string) $row['email'],
+        (string) $row['name'],
+        (string) $row['ticket']
+    );
+
+    $pdo->prepare('UPDATE waitlist SET notified = :n, pdf_sent = :pdf WHERE id = :id')
+        ->execute([
+            'n' => $sent ? 1 : 0,
+            'pdf' => $sent ? 1 : 0,
+            'id' => $waitlistId,
+        ]);
+
+    if (!$sent) {
+        return [
+            'ok' => false,
+            'message' => 'Payment recorded, but ticket/PDF email failed.',
+        ];
+    }
+
+    return ['ok' => true, 'message' => 'Payment fulfilled and email sent.'];
+}
+
+function send_paid_ticket_email(string $email, string $name, string $ticket): bool
+{
+    $pdfPath = protocol_pdf_path();
+    $attachments = [];
+
+    if (is_file($pdfPath)) {
+        $attachments[] = [
+            'path' => $pdfPath,
+            'filename' => 'MYCOPY-Protocol.pdf',
+            'mime' => 'application/pdf',
+        ];
+    }
+
+    $subject = 'MYCOPY — your waitlist ticket + protocol PDF';
     $body = "Hello {$name},\n\n"
-        . "Your place on the MYCOPY waitlist is reserved.\n\n"
-        . "Ticket number: {$ticket}\n\n"
-        . "Keep this number for your records.\n"
-        . "When your studio access is approved, you will receive a separate access code by email.\n"
+        . "Payment confirmed. Your place on the MYCOPY waitlist is reserved.\n\n"
+        . "Ticket number: {$ticket}\n"
+        . "Amount: \$49 USD\n\n"
+        . "Your protocol PDF is attached to this email.\n"
+        . "Keep your ticket for your records.\n"
+        . "When studio access is approved, you will receive a separate access code.\n\n"
         . "Do not share your ticket with anyone.\n\n"
         . "— MYCOPY.DIGITAL\n";
 
     $mailer = smtp_mailer();
-    return $mailer->send($email, $name, $subject, $body);
+    return $mailer->send($email, $name, $subject, $body, $attachments);
 }
 
 function send_studio_access_email(string $email, string $name, string $ticket, string $code): bool

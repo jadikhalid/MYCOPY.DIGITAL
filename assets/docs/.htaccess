@@ -1,0 +1,4 @@
+# Protocol PDF is delivered by email after payment only
+<FilesMatch "\.(pdf)$">
+  Require all denied
+</FilesMatch>

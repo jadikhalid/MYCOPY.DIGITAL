@@ -6,12 +6,20 @@ $flash = admin_flash_get();
 $entries = fetch_waitlist_entries();
 $waiting = 0;
 $approved = 0;
+$paid = 0;
+$unpaid = 0;
 
 foreach ($entries as $entry) {
     if (($entry['status'] ?? '') === 'approved') {
         $approved++;
-    } else {
+    } elseif (($entry['payment_status'] ?? '') === 'paid') {
         $waiting++;
+    }
+
+    if (($entry['payment_status'] ?? '') === 'paid') {
+        $paid++;
+    } else {
+        $unpaid++;
     }
 }
 ?>
@@ -43,7 +51,7 @@ foreach ($entries as $entry) {
 
     <div class="admin-stats">
       <div class="admin-stat">
-        <span class="admin-stat__label">Waiting</span>
+        <span class="admin-stat__label">Paid / waiting</span>
         <strong><?= $waiting ?></strong>
       </div>
       <div class="admin-stat">
@@ -51,8 +59,12 @@ foreach ($entries as $entry) {
         <strong><?= $approved ?></strong>
       </div>
       <div class="admin-stat">
-        <span class="admin-stat__label">Total</span>
-        <strong><?= count($entries) ?></strong>
+        <span class="admin-stat__label">Unpaid</span>
+        <strong><?= $unpaid ?></strong>
+      </div>
+      <div class="admin-stat">
+        <span class="admin-stat__label">Paid total</span>
+        <strong><?= $paid ?></strong>
       </div>
     </div>
 
@@ -72,6 +84,7 @@ foreach ($entries as $entry) {
               <th>Ticket</th>
               <th>Name</th>
               <th>Email</th>
+              <th>Payment</th>
               <th>Status</th>
               <th>Studio code</th>
               <th>Signed up</th>
@@ -82,7 +95,9 @@ foreach ($entries as $entry) {
             <?php foreach ($entries as $entry): ?>
               <?php
                 $status = (string) ($entry['status'] ?? 'waiting');
+                $payment = (string) ($entry['payment_status'] ?? 'unpaid');
                 $isApproved = $status === 'approved';
+                $isPaid = $payment === 'paid';
                 $studioCode = (string) ($entry['studio_code'] ?? '');
               ?>
               <tr>
@@ -90,8 +105,13 @@ foreach ($entries as $entry) {
                 <td><?= htmlspecialchars((string) $entry['name'], ENT_QUOTES, 'UTF-8') ?></td>
                 <td><?= htmlspecialchars((string) $entry['email'], ENT_QUOTES, 'UTF-8') ?></td>
                 <td>
+                  <span class="admin-badge admin-badge--<?= $isPaid ? 'ok' : 'wait' ?>">
+                    <?= htmlspecialchars($payment, ENT_QUOTES, 'UTF-8') ?>
+                  </span>
+                </td>
+                <td>
                   <span class="admin-badge admin-badge--<?= $isApproved ? 'ok' : 'wait' ?>">
-                    <?= $isApproved ? 'approved' : 'waiting' ?>
+                    <?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>
                   </span>
                 </td>
                 <td>
@@ -103,7 +123,9 @@ foreach ($entries as $entry) {
                 </td>
                 <td class="admin-muted"><?= htmlspecialchars(admin_format_date((string) $entry['created_at']), ENT_QUOTES, 'UTF-8') ?></td>
                 <td>
-                  <?php if (!$isApproved): ?>
+                  <?php if (!$isPaid): ?>
+                    <span class="admin-muted">Awaiting payment</span>
+                  <?php elseif (!$isApproved): ?>
                     <form method="post" action="action.php" class="admin-inline-form">
                       <input type="hidden" name="csrf" value="<?= htmlspecialchars(admin_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
                       <input type="hidden" name="id" value="<?= (int) $entry['id'] ?>">

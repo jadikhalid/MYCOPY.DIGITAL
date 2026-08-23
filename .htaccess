@@ -25,3 +25,11 @@ Options -Indexes
 <Files "config.admin.example.php">
   Require all denied
 </Files>
+
+<Files "config.stripe.php">
+  Require all denied
+</Files>
+
+<Files "config.stripe.example.php">
+  Require all denied
+</Files>

@@ -1,6 +1,6 @@
 # MYCOPY.DIGITAL
 
-PHP landing page: **train an AI to be you**, with a waitlist ticket (SMTP email) and an admin panel to grant studio access.
+PHP landing page: **train an AI to be you**, with paid waitlist reservation ($49), protocol PDF by email, and an admin panel to grant studio access.
 
 ## Run locally
 
@@ -13,9 +13,29 @@ php -S localhost:8080 -t .
 1. Copy `config.smtp.example.php` → `config.smtp.php`
 2. Fill in host, port, credentials, and sender
 
-The waitlist ticket is **never** shown on screen: it is sent by email only.
+## Stripe ($49 waitlist + PDF)
 
-## Admin panel (waitlist → studio codes)
+1. Copy `config.stripe.example.php` → `config.stripe.php`
+2. Fill in:
+   - `secret_key` (test or live)
+   - `webhook_secret`
+   - `site_url` (e.g. `https://mycopy.digital` or `http://localhost:8001`)
+3. In Stripe Dashboard → Developers → Webhooks:
+   - Endpoint: `https://your-domain/payments/webhook.php`
+   - Event: `checkout.session.completed`
+4. Replace `assets/docs/mycopy-protocol.pdf` with your final PDF when ready
+
+Flow:
+
+1. User submits name + email on `/attente.php`
+2. Redirect to Stripe Checkout ($49 USD)
+3. Webhook marks payment paid
+4. Email sends waitlist ticket + protocol PDF (attachment)
+5. Admin later grants studio code (`STU-…`)
+
+The waitlist ticket is **never** shown on screen: email only.
+
+## Admin panel
 
 1. Copy `config.admin.example.php` → `config.admin.php`
 2. Generate a password hash:
@@ -27,36 +47,27 @@ php -r "echo password_hash('your-password', PASSWORD_DEFAULT), PHP_EOL;"
 3. Paste the hash into `config.admin.php`
 4. Open `/admin/login.php`
 
-From the admin panel you can:
-
-- Review waitlist signups
-- **Send code** — generates a unique studio code (`STU-XXXXXX`), marks the entry as approved, emails the code
-- **Resend** — resends the existing studio code by email
-
-Studio login on the homepage accepts:
-
-- Codes issued from the waitlist (`STU-…`, stored in SQLite)
-- Optional bootstrap codes in `config.php` (`ACCESS_CODES`)
-
 ## Pages
 
 | File | Role |
 |------|------|
 | `index.php` | Studio access (code) |
-| `attente.php` | Waitlist signup + toasts |
-| `reserve.php` | Signup handler |
+| `attente.php` | Paid waitlist reservation |
+| `reserve.php` | Starts Stripe Checkout |
+| `payments/` | Checkout success/cancel + webhook |
 | `admin/` | Waitlist admin panel |
-| `mail/SmtpMailer.php` | SMTP client |
+| `mail/SmtpMailer.php` | SMTP client (attachments) |
 | `vault.php` | Private studio |
 | `data/mycopy.sqlite` | Database (auto-created) |
+| `assets/docs/mycopy-protocol.pdf` | Fixed protocol PDF |
 
 ## Waitlist schema
-
-Table `waitlist`:
 
 | Column | Purpose |
 |--------|---------|
 | `ticket` | Waitlist ticket (`MC-00001`) |
-| `status` | `waiting` or `approved` |
+| `payment_status` | `unpaid` / `paid` |
+| `status` | `pending_payment` / `waiting` / `approved` |
 | `studio_code` | Issued studio access code |
-| `access_sent_at` | When the studio code was last sent |
+| `pdf_sent` | Protocol PDF emailed (0/1) |
+| `paid_at` | Payment timestamp |

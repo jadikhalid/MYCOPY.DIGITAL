@@ -1,6 +1,7 @@
 <?php
 /**
  * Minimal SMTP client (AUTH LOGIN, STARTTLS / SSL).
+ * Supports optional file attachments (multipart/mixed).
  */
 
 declare(strict_types=1);
@@ -38,8 +39,16 @@ final class SmtpMailer
         return $this->lastError;
     }
 
-    public function send(string $toEmail, string $toName, string $subject, string $bodyText): bool
-    {
+    /**
+     * @param list<array{path: string, filename?: string, mime?: string}> $attachments
+     */
+    public function send(
+        string $toEmail,
+        string $toName,
+        string $subject,
+        string $bodyText,
+        array $attachments = []
+    ): bool {
         $this->lastError = '';
 
         if ($this->host === '' || $this->fromEmail === '') {
@@ -87,7 +96,7 @@ final class SmtpMailer
             $this->command('DATA');
             $this->expect([354]);
 
-            $payload = $this->buildMessage($toEmail, $toName, $subject, $bodyText);
+            $payload = $this->buildMessage($toEmail, $toName, $subject, $bodyText, $attachments);
             fwrite($this->socket, $payload . "\r\n.\r\n");
             $this->expect([250]);
 
@@ -173,8 +182,16 @@ final class SmtpMailer
         return $data;
     }
 
-    private function buildMessage(string $toEmail, string $toName, string $subject, string $bodyText): string
-    {
+    /**
+     * @param list<array{path: string, filename?: string, mime?: string}> $attachments
+     */
+    private function buildMessage(
+        string $toEmail,
+        string $toName,
+        string $subject,
+        string $bodyText,
+        array $attachments
+    ): string {
         $fromName = $this->encodeHeader($this->fromName);
         $toNameEnc = $this->encodeHeader($toName);
         $subjectEnc = $this->encodeHeader($subject);
@@ -188,8 +205,6 @@ final class SmtpMailer
             "Subject: {$subjectEnc}",
             "Message-ID: {$messageId}",
             'MIME-Version: 1.0',
-            'Content-Type: text/plain; charset=UTF-8',
-            'Content-Transfer-Encoding: 8bit',
             'X-Mailer: MYCOPY-SMTP',
         ];
 
@@ -197,7 +212,53 @@ final class SmtpMailer
         $body = str_replace("\n", "\r\n", $body);
         $body = preg_replace('/^\./m', '..', $body) ?? $body;
 
-        return implode("\r\n", $headers) . "\r\n\r\n" . $body;
+        if ($attachments === []) {
+            $headers[] = 'Content-Type: text/plain; charset=UTF-8';
+            $headers[] = 'Content-Transfer-Encoding: 8bit';
+            return implode("\r\n", $headers) . "\r\n\r\n" . $body;
+        }
+
+        $boundary = 'mycopy_' . bin2hex(random_bytes(12));
+        $headers[] = 'Content-Type: multipart/mixed; boundary="' . $boundary . '"';
+
+        $parts = [];
+        $parts[] = '--' . $boundary;
+        $parts[] = 'Content-Type: text/plain; charset=UTF-8';
+        $parts[] = 'Content-Transfer-Encoding: 8bit';
+        $parts[] = '';
+        $parts[] = $body;
+
+        foreach ($attachments as $attachment) {
+            $path = (string) ($attachment['path'] ?? '');
+            if ($path === '' || !is_file($path)) {
+                throw new RuntimeException('Attachment missing: ' . $path);
+            }
+
+            $filename = (string) ($attachment['filename'] ?? basename($path));
+            $mime = (string) ($attachment['mime'] ?? 'application/octet-stream');
+            $binary = file_get_contents($path);
+            if ($binary === false) {
+                throw new RuntimeException('Could not read attachment: ' . $path);
+            }
+
+            $encoded = chunk_split(base64_encode($binary));
+
+            $parts[] = '--' . $boundary;
+            $parts[] = 'Content-Type: ' . $mime . '; name="' . $this->safeFilename($filename) . '"';
+            $parts[] = 'Content-Transfer-Encoding: base64';
+            $parts[] = 'Content-Disposition: attachment; filename="' . $this->safeFilename($filename) . '"';
+            $parts[] = '';
+            $parts[] = trim($encoded);
+        }
+
+        $parts[] = '--' . $boundary . '--';
+
+        return implode("\r\n", $headers) . "\r\n\r\n" . implode("\r\n", $parts);
+    }
+
+    private function safeFilename(string $filename): string
+    {
+        return preg_replace('/["\r\n]+/', '', $filename) ?? 'file';
     }
 
     private function encodeHeader(string $value): string
