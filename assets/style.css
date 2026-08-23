@@ -1423,7 +1423,11 @@ body.cart-open {
 }
 
 .cart-drawer__mount {
-  min-height: 24rem;
+  min-height: 28rem;
+}
+
+.cart-drawer__mount iframe {
+  min-height: 28rem;
 }
 
 .cart-drawer__status {
@@ -1431,26 +1435,6 @@ body.cart-open {
   font-size: 0.72rem;
   color: var(--fog);
   margin-top: 0.75rem;
-}
-
-.cart-drawer__redirect {
-  padding: 2rem 1rem;
-  text-align: center;
-}
-
-.cart-drawer__redirect p {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 600;
-  margin-bottom: 0.65rem;
-}
-
-.cart-drawer__redirect-note {
-  font-family: var(--font-mono) !important;
-  font-size: 0.72rem !important;
-  font-weight: 400 !important;
-  color: var(--fog);
-  line-height: 1.5;
 }
 
 @media (max-width: 720px) {
