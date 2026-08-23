@@ -212,7 +212,8 @@ function grant_studio_access(int $waitlistId, bool $resend = false): array
  *
  * @return array{
  *   ok: bool,
- *   checkout_url?: string,
+ *   client_secret?: string,
+ *   session_id?: string,
  *   toast?: array{type: string, title: string, message: string},
  *   keep_form?: bool
  * }
@@ -380,7 +381,8 @@ function start_checkout_reservation(string $name, string $email): array
 
     return [
         'ok' => true,
-        'checkout_url' => (string) $checkout['url'],
+        'client_secret' => (string) ($checkout['client_secret'] ?? ''),
+        'session_id' => (string) ($checkout['session_id'] ?? ''),
     ];
 }
 

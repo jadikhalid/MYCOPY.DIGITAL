@@ -1324,3 +1324,113 @@ body.page-admin .admin-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* —— Checkout cart drawer (75vw from right) —— */
+body.cart-open {
+  overflow: hidden;
+}
+
+.cart-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(5, 7, 6, 0.62);
+  backdrop-filter: blur(2px);
+  opacity: 1;
+  transition: opacity 0.28s var(--ease);
+}
+
+.cart-overlay[hidden] {
+  display: none;
+}
+
+.cart-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 50;
+  width: 75vw;
+  max-width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  background:
+    linear-gradient(180deg, rgba(18, 22, 20, 0.98), rgba(10, 12, 11, 0.99));
+  border-left: 1px solid var(--line);
+  box-shadow: -24px 0 60px rgba(0, 0, 0, 0.45);
+  transform: translateX(100%);
+  transition: transform 0.38s var(--ease);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cart-drawer.is-open {
+  transform: translateX(0);
+}
+
+.cart-drawer__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+
+.cart-drawer__kicker {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 0.35rem;
+}
+
+.cart-drawer__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.cart-drawer__close {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--line);
+  background: rgba(232, 235, 230, 0.04);
+  color: var(--bone);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.cart-drawer__close:hover {
+  border-color: rgba(92, 255, 154, 0.4);
+  color: var(--signal);
+}
+
+.cart-drawer__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0.75rem 0.85rem 1.5rem;
+}
+
+.cart-drawer__mount {
+  min-height: 24rem;
+}
+
+.cart-drawer__status {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--fog);
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 720px) {
+  .cart-drawer {
+    width: 100vw;
+  }
+}

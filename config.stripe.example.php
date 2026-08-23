@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 return [
     'secret_key'      => 'sk_test_...',
+    'publishable_key' => 'pk_test_...',
     'webhook_secret'  => 'whsec_...',
     'currency'        => 'usd',
     'amount_cents'    => 4900,

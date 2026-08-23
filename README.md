@@ -18,6 +18,7 @@ php -S localhost:8080 -t .
 1. Copy `config.stripe.example.php` → `config.stripe.php`
 2. Fill in:
    - `secret_key` (test or live)
+   - `publishable_key` (`pk_test_…` / `pk_live_…` — required for embedded cart checkout)
    - `webhook_secret`
    - `site_url` (e.g. `https://mycopy.digital` or `http://localhost:8001`)
 3. In Stripe Dashboard → Developers → Webhooks:
@@ -28,7 +29,7 @@ php -S localhost:8080 -t .
 Flow:
 
 1. User submits name + email on `/attente.php`
-2. Redirect to Stripe Checkout ($49 USD)
+2. A checkout cart slides in from the right (75% viewport) with Stripe Embedded Checkout
 3. Webhook marks payment paid
 4. Email sends waitlist ticket + protocol PDF (attachment)
 5. Admin later grants studio code (`STU-…`)

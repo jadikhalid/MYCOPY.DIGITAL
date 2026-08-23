@@ -17,6 +17,7 @@ $toastTitle = is_array($toast) ? (string) ($toast['title'] ?? '') : '';
 $toastMessage = is_array($toast) ? (string) ($toast['message'] ?? '') : '';
 
 $amountLabel = '$49';
+$stripePublishableKey = stripe_publishable_key();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -32,6 +33,7 @@ $amountLabel = '$49';
   <link rel="icon" href="favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
   <link rel="stylesheet" href="assets/style.css">
+  <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
   <div class="stage">
@@ -61,7 +63,7 @@ $amountLabel = '$49';
           After payment, your ticket and protocol PDF are sent by email only.
         </p>
 
-        <form class="access reserve" method="post" action="reserve.php" autocomplete="on">
+        <form class="access reserve" id="reserve-form" method="post" action="reserve.php" autocomplete="on">
           <label class="access__label" for="name">Name</label>
           <input
             class="access__input access__input--full"
@@ -86,11 +88,15 @@ $amountLabel = '$49';
             value="<?= htmlspecialchars((string) ($form['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
           >
           <div class="access__row access__row--end">
-            <button class="access__btn" type="submit">Pay <?= htmlspecialchars($amountLabel, ENT_QUOTES, 'UTF-8') ?> — Reserve</button>
+            <button class="access__btn" id="reserve-submit" type="submit">
+              <span class="access__btn-label">Pay <?= htmlspecialchars($amountLabel, ENT_QUOTES, 'UTF-8') ?> — Reserve</span>
+              <span class="access__btn-spinner" aria-hidden="true"></span>
+            </button>
           </div>
           <p class="hero__lead" style="margin-top:0.85rem;margin-bottom:0;font-size:0.78rem;">
             Secure checkout via Stripe. Includes waitlist reservation + protocol PDF.
           </p>
+          <p class="access__error" id="reserve-error" role="alert" hidden></p>
         </form>
       </div>
     </main>
@@ -100,6 +106,21 @@ $amountLabel = '$49';
       <span>Paid reservation</span>
     </footer>
   </div>
+
+  <div class="cart-overlay" id="cart-overlay" hidden></div>
+  <aside class="cart-drawer" id="cart-drawer" aria-hidden="true" aria-label="Checkout cart">
+    <header class="cart-drawer__head">
+      <div>
+        <p class="cart-drawer__kicker">Checkout</p>
+        <h2 class="cart-drawer__title">Reserve · <?= htmlspecialchars($amountLabel, ENT_QUOTES, 'UTF-8') ?></h2>
+      </div>
+      <button type="button" class="cart-drawer__close" id="cart-close" aria-label="Close checkout">×</button>
+    </header>
+    <div class="cart-drawer__body">
+      <div id="checkout-mount" class="cart-drawer__mount"></div>
+      <p class="cart-drawer__status" id="cart-status" hidden></p>
+    </div>
+  </aside>
 
   <?php if ($toastType !== ''): ?>
     <div
@@ -114,5 +135,10 @@ $amountLabel = '$49';
       </div>
     </div>
   <?php endif; ?>
+
+  <script>
+    window.MYCOPY_STRIPE_PK = <?= json_encode($stripePublishableKey, JSON_UNESCAPED_SLASHES) ?>;
+  </script>
+  <script src="assets/checkout-cart.js" defer></script>
 </body>
 </html>
