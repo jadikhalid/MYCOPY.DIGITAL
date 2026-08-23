@@ -26,18 +26,25 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
+$uiMode = (string) ($_POST['ui_mode'] ?? 'embedded_page');
+if ($uiMode !== 'hosted_page') {
+    $uiMode = 'embedded_page';
+}
+
 $result = start_checkout_reservation(
     (string) ($_POST['name'] ?? ''),
-    (string) ($_POST['email'] ?? '')
+    (string) ($_POST['email'] ?? ''),
+    $uiMode
 );
 
 if ($wantsJson) {
     header('Content-Type: application/json; charset=utf-8');
 
-    if (!empty($result['ok']) && !empty($result['client_secret'])) {
+    if (!empty($result['ok']) && (!empty($result['client_secret']) || !empty($result['url']))) {
         echo json_encode([
             'ok' => true,
-            'client_secret' => $result['client_secret'],
+            'client_secret' => $result['client_secret'] ?? '',
+            'url' => $result['url'] ?? '',
             'session_id' => $result['session_id'] ?? '',
             'publishable_key' => stripe_publishable_key(),
         ]);

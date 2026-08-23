@@ -139,6 +139,6 @@ $stripePublishableKey = stripe_publishable_key();
   <script>
     window.MYCOPY_STRIPE_PK = <?= json_encode($stripePublishableKey, JSON_UNESCAPED_SLASHES) ?>;
   </script>
-  <script src="assets/checkout-cart.js" defer></script>
+  <script src="assets/checkout-cart.js?v=6" defer></script>
 </body>
 </html>

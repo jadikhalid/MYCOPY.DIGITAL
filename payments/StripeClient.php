@@ -88,12 +88,13 @@ function stripe_request(string $method, string $path, array $params = []): array
 }
 
 /**
- * Create an Embedded Checkout session (mounted in a side cart).
+ * Create a Checkout session (embedded cart or hosted redirect).
  *
  * @param array{name: string, email: string, waitlist_id: int, ticket: string} $customer
- * @return array{ok: bool, client_secret?: string, session_id?: string, error?: string}
+ * @param 'embedded_page'|'hosted_page' $uiMode
+ * @return array{ok: bool, client_secret?: string, url?: string, session_id?: string, error?: string}
  */
-function stripe_create_checkout_session(array $customer): array
+function stripe_create_checkout_session(array $customer, string $uiMode = 'embedded_page'): array
 {
     $config = stripe_config();
     $siteUrl = rtrim((string) ($config['site_url'] ?? ''), '/');
@@ -101,15 +102,18 @@ function stripe_create_checkout_session(array $customer): array
         return ['ok' => false, 'error' => 'Stripe site_url is missing.'];
     }
 
+    if ($uiMode !== 'embedded_page' && $uiMode !== 'hosted_page') {
+        $uiMode = 'embedded_page';
+    }
+
     $amount = (int) ($config['amount_cents'] ?? 4900);
     $currency = strtolower((string) ($config['currency'] ?? 'usd'));
     $productName = (string) ($config['product_name'] ?? 'MYCOPY Waitlist Reservation');
     $productDesc = (string) ($config['product_description'] ?? 'Waitlist place + protocol PDF');
 
-    $result = stripe_request('POST', 'checkout/sessions', [
+    $params = [
         'mode' => 'payment',
-        'ui_mode' => 'embedded_page',
-        'return_url' => $siteUrl . '/payments/success.php?session_id={CHECKOUT_SESSION_ID}',
+        'ui_mode' => $uiMode,
         'customer_email' => $customer['email'],
         'client_reference_id' => (string) $customer['waitlist_id'],
         'line_items[0][quantity]' => 1,
@@ -120,21 +124,43 @@ function stripe_create_checkout_session(array $customer): array
         'metadata[waitlist_id]' => (string) $customer['waitlist_id'],
         'metadata[ticket]' => $customer['ticket'],
         'metadata[name]' => $customer['name'],
-    ]);
+    ];
+
+    if ($uiMode === 'embedded_page') {
+        $params['return_url'] = $siteUrl . '/payments/success.php?session_id={CHECKOUT_SESSION_ID}';
+    } else {
+        $params['success_url'] = $siteUrl . '/payments/success.php?session_id={CHECKOUT_SESSION_ID}';
+        $params['cancel_url'] = $siteUrl . '/payments/cancel.php';
+    }
+
+    $result = stripe_request('POST', 'checkout/sessions', $params);
 
     if (!$result['ok']) {
         return ['ok' => false, 'error' => $result['error'] ?? 'Checkout creation failed.'];
     }
 
     $data = $result['data'] ?? [];
-    $clientSecret = (string) ($data['client_secret'] ?? '');
     $sessionId = (string) ($data['id'] ?? '');
 
-    if ($clientSecret === '' || $sessionId === '') {
-        return ['ok' => false, 'error' => 'Stripe did not return an embedded checkout secret.'];
+    if ($sessionId === '') {
+        return ['ok' => false, 'error' => 'Stripe did not return a checkout session.'];
     }
 
-    return ['ok' => true, 'client_secret' => $clientSecret, 'session_id' => $sessionId];
+    if ($uiMode === 'embedded_page') {
+        $clientSecret = (string) ($data['client_secret'] ?? '');
+        if ($clientSecret === '') {
+            return ['ok' => false, 'error' => 'Stripe did not return an embedded checkout secret.'];
+        }
+
+        return ['ok' => true, 'client_secret' => $clientSecret, 'session_id' => $sessionId];
+    }
+
+    $url = (string) ($data['url'] ?? '');
+    if ($url === '') {
+        return ['ok' => false, 'error' => 'Stripe did not return a checkout URL.'];
+    }
+
+    return ['ok' => true, 'url' => $url, 'session_id' => $sessionId];
 }
 
 function stripe_publishable_key(): string

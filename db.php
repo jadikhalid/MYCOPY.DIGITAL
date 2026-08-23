@@ -210,15 +210,17 @@ function grant_studio_access(int $waitlistId, bool $resend = false): array
 /**
  * Start paid reservation: create/reuse unpaid row, open Stripe Checkout.
  *
+ * @param 'embedded_page'|'hosted_page' $uiMode
  * @return array{
  *   ok: bool,
  *   client_secret?: string,
+ *   url?: string,
  *   session_id?: string,
  *   toast?: array{type: string, title: string, message: string},
  *   keep_form?: bool
  * }
  */
-function start_checkout_reservation(string $name, string $email): array
+function start_checkout_reservation(string $name, string $email, string $uiMode = 'embedded_page'): array
 {
     $name = trim(preg_replace('/\s+/u', ' ', $name) ?? '');
     $email = strtolower(trim($email));
@@ -354,7 +356,7 @@ function start_checkout_reservation(string $name, string $email): array
         'email' => $email,
         'waitlist_id' => $waitlistId,
         'ticket' => $ticket,
-    ]);
+    ], $uiMode);
 
     if (!$checkout['ok']) {
         return [
@@ -382,6 +384,7 @@ function start_checkout_reservation(string $name, string $email): array
     return [
         'ok' => true,
         'client_secret' => (string) ($checkout['client_secret'] ?? ''),
+        'url' => (string) ($checkout['url'] ?? ''),
         'session_id' => (string) ($checkout['session_id'] ?? ''),
     ];
 }
