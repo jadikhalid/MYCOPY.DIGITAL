@@ -3,25 +3,26 @@ require __DIR__ . '/bootstrap.php';
 require_admin();
 
 $flash = admin_flash_get();
-$entries = fetch_waitlist_entries();
+$allEntries = fetch_waitlist_entries();
+
+/** Waitlist = paid reservations only */
+$entries = array_values(array_filter(
+    $allEntries,
+    static fn(array $entry): bool => ($entry['payment_status'] ?? '') === 'paid'
+));
+
 $waiting = 0;
 $approved = 0;
-$paid = 0;
-$unpaid = 0;
 
 foreach ($entries as $entry) {
     if (($entry['status'] ?? '') === 'approved') {
         $approved++;
-    } elseif (($entry['payment_status'] ?? '') === 'paid') {
+    } else {
         $waiting++;
     }
-
-    if (($entry['payment_status'] ?? '') === 'paid') {
-        $paid++;
-    } else {
-        $unpaid++;
-    }
 }
+
+$total = count($entries);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -51,7 +52,7 @@ foreach ($entries as $entry) {
 
     <div class="admin-stats">
       <div class="admin-stat">
-        <span class="admin-stat__label">Paid / waiting</span>
+        <span class="admin-stat__label">Waiting</span>
         <strong><?= $waiting ?></strong>
       </div>
       <div class="admin-stat">
@@ -59,12 +60,8 @@ foreach ($entries as $entry) {
         <strong><?= $approved ?></strong>
       </div>
       <div class="admin-stat">
-        <span class="admin-stat__label">Unpaid</span>
-        <strong><?= $unpaid ?></strong>
-      </div>
-      <div class="admin-stat">
-        <span class="admin-stat__label">Paid total</span>
-        <strong><?= $paid ?></strong>
+        <span class="admin-stat__label">Total</span>
+        <strong><?= $total ?></strong>
       </div>
     </div>
 
@@ -84,7 +81,6 @@ foreach ($entries as $entry) {
               <th>Ticket</th>
               <th>Name</th>
               <th>Email</th>
-              <th>Payment</th>
               <th>Status</th>
               <th>Studio code</th>
               <th>Signed up</th>
@@ -95,20 +91,16 @@ foreach ($entries as $entry) {
             <?php foreach ($entries as $entry): ?>
               <?php
                 $status = (string) ($entry['status'] ?? 'waiting');
-                $payment = (string) ($entry['payment_status'] ?? 'unpaid');
+                if ($status === 'pending_payment') {
+                    $status = 'waiting';
+                }
                 $isApproved = $status === 'approved';
-                $isPaid = $payment === 'paid';
                 $studioCode = (string) ($entry['studio_code'] ?? '');
               ?>
               <tr>
                 <td><code><?= htmlspecialchars((string) $entry['ticket'], ENT_QUOTES, 'UTF-8') ?></code></td>
                 <td><?= htmlspecialchars((string) $entry['name'], ENT_QUOTES, 'UTF-8') ?></td>
                 <td><?= htmlspecialchars((string) $entry['email'], ENT_QUOTES, 'UTF-8') ?></td>
-                <td>
-                  <span class="admin-badge admin-badge--<?= $isPaid ? 'ok' : 'wait' ?>">
-                    <?= htmlspecialchars($payment, ENT_QUOTES, 'UTF-8') ?>
-                  </span>
-                </td>
                 <td>
                   <span class="admin-badge admin-badge--<?= $isApproved ? 'ok' : 'wait' ?>">
                     <?= htmlspecialchars($status, ENT_QUOTES, 'UTF-8') ?>
@@ -121,25 +113,36 @@ foreach ($entries as $entry) {
                     <span class="admin-muted">—</span>
                   <?php endif; ?>
                 </td>
-                <td class="admin-muted"><?= htmlspecialchars(admin_format_date((string) $entry['created_at']), ENT_QUOTES, 'UTF-8') ?></td>
+                <td class="admin-muted"><?= htmlspecialchars(admin_format_date((string) ($entry['paid_at'] ?: $entry['created_at'])), ENT_QUOTES, 'UTF-8') ?></td>
                 <td>
-                  <?php if (!$isPaid): ?>
-                    <span class="admin-muted">Awaiting payment</span>
-                  <?php elseif (!$isApproved): ?>
-                    <form method="post" action="action.php" class="admin-inline-form">
+                  <div class="admin-actions">
+                    <?php if (!$isApproved): ?>
+                      <form method="post" action="action.php" class="admin-inline-form">
+                        <input type="hidden" name="csrf" value="<?= htmlspecialchars(admin_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
+                        <input type="hidden" name="id" value="<?= (int) $entry['id'] ?>">
+                        <input type="hidden" name="action" value="grant">
+                        <button class="access__btn admin-btn-sm" type="submit">Send code</button>
+                      </form>
+                    <?php else: ?>
+                      <form method="post" action="action.php" class="admin-inline-form">
+                        <input type="hidden" name="csrf" value="<?= htmlspecialchars(admin_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
+                        <input type="hidden" name="id" value="<?= (int) $entry['id'] ?>">
+                        <input type="hidden" name="action" value="resend">
+                        <button class="btn-ghost admin-btn-sm" type="submit">Resend</button>
+                      </form>
+                    <?php endif; ?>
+                    <form
+                      method="post"
+                      action="action.php"
+                      class="admin-inline-form"
+                      onsubmit="return confirm('Delete this waitlist entry permanently?');"
+                    >
                       <input type="hidden" name="csrf" value="<?= htmlspecialchars(admin_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
                       <input type="hidden" name="id" value="<?= (int) $entry['id'] ?>">
-                      <input type="hidden" name="action" value="grant">
-                      <button class="access__btn admin-btn-sm" type="submit">Send code</button>
+                      <input type="hidden" name="action" value="delete">
+                      <button class="btn-ghost admin-btn-sm admin-btn-danger" type="submit">Delete</button>
                     </form>
-                  <?php else: ?>
-                    <form method="post" action="action.php" class="admin-inline-form">
-                      <input type="hidden" name="csrf" value="<?= htmlspecialchars(admin_csrf_token(), ENT_QUOTES, 'UTF-8') ?>">
-                      <input type="hidden" name="id" value="<?= (int) $entry['id'] ?>">
-                      <input type="hidden" name="action" value="resend">
-                      <button class="btn-ghost admin-btn-sm" type="submit">Resend</button>
-                    </form>
-                  <?php endif; ?>
+                  </div>
                 </td>
               </tr>
             <?php endforeach; ?>

@@ -27,6 +27,8 @@ if ($action === 'grant') {
     $result = grant_studio_access($id, false);
 } elseif ($action === 'resend') {
     $result = grant_studio_access($id, true);
+} elseif ($action === 'delete') {
+    $result = delete_waitlist_entry($id);
 } else {
     admin_flash_set('error', 'Unknown action.');
     header('Location: index.php');

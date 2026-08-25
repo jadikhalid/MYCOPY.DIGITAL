@@ -139,6 +139,32 @@ function fetch_waitlist_entries(): array
 }
 
 /**
+ * @return array{ok: bool, message: string}
+ */
+function delete_waitlist_entry(int $waitlistId): array
+{
+    $pdo = db();
+
+    $stmt = $pdo->prepare(
+        'SELECT id, ticket, email FROM waitlist WHERE id = :id LIMIT 1'
+    );
+    $stmt->execute(['id' => $waitlistId]);
+    $row = $stmt->fetch();
+
+    if (!$row) {
+        return ['ok' => false, 'message' => 'Waitlist entry not found.'];
+    }
+
+    $del = $pdo->prepare('DELETE FROM waitlist WHERE id = :id');
+    $del->execute(['id' => $waitlistId]);
+
+    return [
+        'ok' => true,
+        'message' => "Deleted {$row['ticket']} ({$row['email']}).",
+    ];
+}
+
+/**
  * @return array{ok: bool, message: string, code?: string}
  */
 function grant_studio_access(int $waitlistId, bool $resend = false): array
@@ -204,6 +230,72 @@ function grant_studio_access(int $waitlistId, bool $resend = false): array
             ? "Studio code {$code} resent to {$row['email']}."
             : "Studio access granted. Code {$code} sent to {$row['email']}.",
         'code' => $code,
+    ];
+}
+
+/**
+ * Pre-check email before confirmation modal / checkout.
+ *
+ * @return array{
+ *   ok: bool,
+ *   available?: bool,
+ *   status?: string,
+ *   toast?: array{type: string, title: string, message: string}
+ * }
+ */
+function check_waitlist_email(string $email): array
+{
+    $email = strtolower(trim($email));
+
+    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        return [
+            'ok' => false,
+            'available' => false,
+            'status' => 'invalid',
+            'toast' => [
+                'type' => 'error',
+                'title' => 'Invalid email',
+                'message' => 'Please enter a valid email address.',
+            ],
+        ];
+    }
+
+    if (mb_strlen($email) > 180) {
+        return [
+            'ok' => false,
+            'available' => false,
+            'status' => 'invalid',
+            'toast' => [
+                'type' => 'error',
+                'title' => 'Invalid email',
+                'message' => 'Email address is too long.',
+            ],
+        ];
+    }
+
+    $stmt = db()->prepare(
+        'SELECT payment_status FROM waitlist WHERE lower(email) = :email LIMIT 1'
+    );
+    $stmt->execute(['email' => $email]);
+    $row = $stmt->fetch();
+
+    if ($row && ($row['payment_status'] ?? '') === 'paid') {
+        return [
+            'ok' => false,
+            'available' => false,
+            'status' => 'paid',
+            'toast' => [
+                'type' => 'error',
+                'title' => 'Email already used',
+                'message' => 'This email already has a paid waitlist place. Check your inbox for the ticket and PDF.',
+            ],
+        ];
+    }
+
+    return [
+        'ok' => true,
+        'available' => true,
+        'status' => $row ? 'unpaid' : 'new',
     ];
 }
 

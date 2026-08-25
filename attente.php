@@ -32,7 +32,7 @@ $stripePublishableKey = stripe_publishable_key();
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/style.css?v=18">
   <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
@@ -54,13 +54,12 @@ $stripePublishableKey = stripe_publishable_key();
       <a class="nav__link" href="index.php">Access</a>
     </header>
 
-    <main class="hero">
+    <main class="hero hero--waitlist">
       <div class="hero__copy">
         <p class="vault__badge">Waitlist · <?= htmlspecialchars($amountLabel, ENT_QUOTES, 'UTF-8') ?> USD</p>
         <h1 class="access-page__title">Reserve your place</h1>
-        <p class="hero__lead">
-          <?= htmlspecialchars($amountLabel, ENT_QUOTES, 'UTF-8') ?> locks your waitlist spot.
-          After payment, your ticket and protocol PDF are sent by email only.
+        <p class="hero__lead hero__lead--single">
+          And get The Protocol Guide book (PDF 269 pages) by email.
         </p>
 
         <form class="access reserve" id="reserve-form" method="post" action="reserve.php" autocomplete="on">
@@ -93,12 +92,74 @@ $stripePublishableKey = stripe_publishable_key();
               <span class="access__btn-spinner" aria-hidden="true"></span>
             </button>
           </div>
-          <p class="hero__lead" style="margin-top:0.85rem;margin-bottom:0;font-size:0.78rem;">
-            Secure checkout via Stripe. Includes waitlist reservation + protocol PDF.
-          </p>
+          <div class="pay-methods" aria-label="Secure checkout via Stripe">
+            <p class="pay-methods__label">Secure checkout via Stripe</p>
+            <ul class="pay-methods__list">
+              <li class="pay-methods__item" title="Visa">
+                <span class="visually-hidden">Visa</span>
+                <svg class="pay-methods__icon" viewBox="0 0 48 32" aria-hidden="true" focusable="false">
+                  <rect width="48" height="32" rx="4" fill="#1a1f71"/>
+                  <text x="24" y="21" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="11" font-weight="700" letter-spacing="0.5">VISA</text>
+                </svg>
+              </li>
+              <li class="pay-methods__item" title="Mastercard">
+                <span class="visually-hidden">Mastercard</span>
+                <svg class="pay-methods__icon" viewBox="0 0 48 32" aria-hidden="true" focusable="false">
+                  <rect width="48" height="32" rx="4" fill="#0a0c0b"/>
+                  <circle cx="19" cy="16" r="8" fill="#eb001b"/>
+                  <circle cx="29" cy="16" r="8" fill="#f79e1b"/>
+                  <path d="M24 9.7a8 8 0 0 1 0 12.6 8 8 0 0 1 0-12.6z" fill="#ff5f00"/>
+                </svg>
+              </li>
+              <li class="pay-methods__item" title="American Express">
+                <span class="visually-hidden">American Express</span>
+                <svg class="pay-methods__icon" viewBox="0 0 48 32" aria-hidden="true" focusable="false">
+                  <rect width="48" height="32" rx="4" fill="#2e77bc"/>
+                  <text x="24" y="20.5" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="8" font-weight="700" letter-spacing="0.4">AMEX</text>
+                </svg>
+              </li>
+              <li class="pay-methods__item" title="Apple Pay">
+                <span class="visually-hidden">Apple Pay</span>
+                <svg class="pay-methods__icon" viewBox="0 0 48 32" aria-hidden="true" focusable="false">
+                  <rect width="48" height="32" rx="4" fill="#111"/>
+                  <path fill="#fff" d="M18.2 10.4c.5-.6.8-1.4.7-2.2-.7 0-1.6.5-2.1 1.1-.5.5-.9 1.4-.8 2.2.8.1 1.6-.4 2.2-1.1zm.7 1.2c-1.2-.1-2.2.7-2.8.7-.6 0-1.4-.6-2.4-.6-1.2 0-2.4.7-3 1.9-1.3 2.3-.3 5.6.9 7.5.6.9 1.3 1.9 2.2 1.9.9 0 1.2-.6 2.3-.6s1.4.6 2.3.6c1 0 1.6-.9 2.2-1.8.7-1 .9-1.9.9-2 0 0-1.8-.7-1.8-2.7 0-1.7 1.4-2.5 1.4-2.5-.8-1.2-2-1.3-2.2-1.4z"/>
+                  <text x="33" y="20.5" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="8.5" font-weight="600">Pay</text>
+                </svg>
+              </li>
+              <li class="pay-methods__item" title="Google Pay">
+                <span class="visually-hidden">Google Pay</span>
+                <svg class="pay-methods__icon" viewBox="0 0 48 32" aria-hidden="true" focusable="false">
+                  <rect width="48" height="32" rx="4" fill="#fff"/>
+                  <path fill="#4285F4" d="M23.4 16.2v-2.1h5.8c.1.6.2 1.2.2 2 0 2.4-.7 4.3-1.8 5.6-1.2 1.4-2.9 2.1-5.1 2.1-2.2 0-4-.7-5.4-2.2a7.8 7.8 0 0 1 0-10.9A7.4 7.4 0 0 1 22.5 9c2.1 0 3.5.8 4.6 1.9l-1.6 1.6c-.7-.7-1.7-1.2-3-1.2-2.4 0-4.3 2-4.3 4.5s1.9 4.5 4.3 4.5c1.6 0 2.5-.6 3.1-1.2.5-.5.8-1.2.9-2.2h-4.1z"/>
+                  <text x="36.5" y="20.5" text-anchor="middle" fill="#3c4043" font-family="Arial,sans-serif" font-size="8.5" font-weight="500">Pay</text>
+                </svg>
+              </li>
+            </ul>
+          </div>
           <p class="access__error" id="reserve-error" role="alert" hidden></p>
         </form>
       </div>
+
+      <aside class="price-list" aria-label="Price list">
+        <p class="price-list__title">Price list</p>
+        <dl class="price-list__items">
+          <div class="price-list__row">
+            <dt>Reservation + Protocol Guide book <span class="price-list__hint">(PDF 269 pages)</span></dt>
+            <dd>
+              <span class="price-list__amount">$49</span>
+              <span class="price-list__unit">USD</span>
+            </dd>
+          </div>
+          <div class="price-list__row">
+            <dt>Protocol processing</dt>
+            <dd>
+              <span class="price-list__amount">$5,000</span>
+              <span class="price-list__unit">USD</span>
+            </dd>
+            <p class="price-list__sub">Equipment not included</p>
+          </div>
+        </dl>
+      </aside>
     </main>
 
     <footer class="footer">
@@ -122,6 +183,41 @@ $stripePublishableKey = stripe_publishable_key();
     </div>
   </aside>
 
+  <div class="confirm-overlay" id="confirm-overlay" hidden></div>
+  <div
+    class="confirm-modal"
+    id="confirm-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="confirm-title"
+    aria-hidden="true"
+    hidden
+  >
+    <p class="confirm-modal__kicker">Confirm details</p>
+    <h2 class="confirm-modal__title" id="confirm-title">Before payment</h2>
+    <p class="confirm-modal__lead">
+      Your ticket and protocol PDF will be sent to this email only. Please check carefully.
+    </p>
+    <dl class="confirm-modal__details">
+      <div>
+        <dt>Name</dt>
+        <dd id="confirm-name"></dd>
+      </div>
+      <div>
+        <dt>Email</dt>
+        <dd id="confirm-email"></dd>
+      </div>
+    </dl>
+    <div class="confirm-modal__actions">
+      <button type="button" class="confirm-modal__btn confirm-modal__btn--ghost" id="confirm-edit">
+        Edit
+      </button>
+      <button type="button" class="confirm-modal__btn confirm-modal__btn--solid" id="confirm-pay">
+        Confirm &amp; pay <?= htmlspecialchars($amountLabel, ENT_QUOTES, 'UTF-8') ?>
+      </button>
+    </div>
+  </div>
+
   <?php if ($toastType !== ''): ?>
     <div
       class="toast toast--<?= htmlspecialchars($toastType, ENT_QUOTES, 'UTF-8') ?>"
@@ -139,6 +235,6 @@ $stripePublishableKey = stripe_publishable_key();
   <script>
     window.MYCOPY_STRIPE_PK = <?= json_encode($stripePublishableKey, JSON_UNESCAPED_SLASHES) ?>;
   </script>
-  <script src="assets/checkout-cart.js?v=7" defer></script>
+  <script src="assets/checkout-cart.js?v=10" defer></script>
 </body>
 </html>

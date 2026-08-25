@@ -283,6 +283,67 @@ img {
   animation: rise 0.9s var(--ease) 0.22s both;
 }
 
+.hero__lead--single {
+  max-width: none;
+  white-space: nowrap;
+  font-size: clamp(0.72rem, 1.35vw, 0.95rem);
+}
+
+.pay-methods {
+  margin-top: 0.95rem;
+}
+
+.pay-methods__label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fog);
+  margin-bottom: 0.55rem;
+}
+
+.pay-methods__list {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pay-methods__item {
+  display: flex;
+  line-height: 0;
+}
+
+.pay-methods__icon {
+  width: 2.65rem;
+  height: 1.75rem;
+  display: block;
+  border-radius: 0.28rem;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.reserve__pay-note {
+  max-width: 42ch;
+  margin-top: 0.85rem;
+  margin-bottom: 0;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  white-space: normal;
+}
+
 .access-page__title {
   font-family: var(--font-display);
   font-weight: 750;
@@ -316,6 +377,109 @@ img {
 .access.reserve {
   display: grid;
   gap: 0.35rem;
+}
+
+/* —— Waitlist price list (parallel to form) —— */
+.hero--waitlist {
+  grid-template-columns: minmax(0, 34rem) minmax(14rem, 18rem);
+  grid-template-rows: 1fr;
+  align-items: center;
+  column-gap: clamp(2rem, 6vw, 4.5rem);
+  max-width: 1100px;
+}
+
+.hero--waitlist .hero__copy {
+  max-width: none;
+  justify-content: center;
+}
+
+.price-list {
+  position: relative;
+  z-index: 1;
+  align-self: center;
+  padding-left: 1.15rem;
+  border-left: 1px solid rgba(92, 255, 154, 0.35);
+  animation: rise 0.9s var(--ease) 0.4s both;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.45);
+}
+
+.price-list__title {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 1.1rem;
+}
+
+.price-list__items {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.price-list__row dt {
+  font-size: 0.82rem;
+  color: var(--fog);
+  line-height: 1.4;
+  margin-bottom: 0.35rem;
+  max-width: 22ch;
+}
+
+.price-list__row dt cite {
+  font-style: normal;
+  color: var(--bone);
+}
+
+.price-list__hint {
+  display: inline;
+  color: rgba(163, 174, 166, 0.85);
+  font-size: 0.75rem;
+}
+
+.price-list__sub {
+  margin-top: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(163, 174, 166, 0.9);
+}
+
+.price-list__row dd {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.price-list__amount {
+  font-family: var(--font-display);
+  font-weight: 750;
+  font-size: clamp(1.35rem, 2.8vw, 1.75rem);
+  letter-spacing: -0.02em;
+  color: var(--bone);
+  line-height: 1;
+}
+
+.price-list__unit {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fog);
+}
+
+@media (max-width: 860px) {
+  .hero--waitlist {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    align-items: start;
+    row-gap: 1.5rem;
+  }
+
+  .price-list {
+    max-width: 22rem;
+    margin-top: 0.25rem;
+  }
 }
 
 .access__label {
@@ -449,30 +613,37 @@ img {
   display: none;
 }
 
-/* —— Toast (CSS only) —— */
+/* —— Toast banner (top, slides right → left) —— */
 .toast {
   position: fixed;
-  z-index: 50;
-  right: clamp(1rem, 3vw, 1.75rem);
-  bottom: clamp(1rem, 3vh, 1.75rem);
-  width: min(22rem, calc(100vw - 2rem));
+  z-index: 90;
+  top: 0;
+  right: 0;
+  left: auto;
+  bottom: auto;
+  width: min(28rem, 100vw);
+  max-width: 100%;
   display: grid;
-  grid-template-columns: 3px 1fr;
+  grid-template-columns: 5px 1fr;
   gap: 0;
-  background: rgba(12, 16, 14, 0.92);
-  border: 1px solid var(--line);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  background:
+    linear-gradient(180deg, rgba(22, 26, 24, 0.98), rgba(10, 12, 11, 0.99));
+  border: none;
+  border-left: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(14px);
+  box-shadow: -18px 18px 50px rgba(0, 0, 0, 0.55);
   overflow: hidden;
   pointer-events: none;
   animation:
-    toast-in 0.45s var(--ease) both,
-    toast-out 0.5s var(--ease) 4.8s forwards;
+    toast-in 0.42s var(--ease) both,
+    toast-out 0.45s var(--ease) 5.2s forwards;
 }
 
 .toast__bar {
   display: block;
   background: var(--signal);
+  min-height: 100%;
 }
 
 .toast--error .toast__bar {
@@ -484,39 +655,46 @@ img {
 }
 
 .toast__body {
-  padding: 0.9rem 1rem 1rem;
+  padding: 1.15rem 1.25rem 1.25rem;
 }
 
 .toast__title {
   font-family: var(--font-display);
-  font-weight: 650;
-  font-size: 0.95rem;
-  margin-bottom: 0.25rem;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.35rem;
   color: var(--bone);
 }
 
 .toast__msg {
-  font-size: 0.8rem;
+  font-size: 0.88rem;
   color: var(--fog);
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 @keyframes toast-in {
   from {
-    opacity: 0;
-    transform: translateY(1rem) scale(0.98);
+    opacity: 0.4;
+    transform: translateX(105%);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0);
   }
 }
 
 @keyframes toast-out {
   to {
     opacity: 0;
-    transform: translateY(0.5rem);
+    transform: translateX(105%);
     visibility: hidden;
+  }
+}
+
+@media (max-width: 720px) {
+  .toast {
+    width: 100vw;
   }
 }
 
@@ -1300,9 +1478,26 @@ body.page-admin {
   display: inline;
 }
 
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
 .admin-btn-sm {
   padding: 0.45rem 0.75rem;
   font-size: 0.72rem;
+}
+
+.admin-btn-danger {
+  color: var(--warn);
+  border-color: rgba(255, 107, 74, 0.35);
+}
+
+.admin-btn-danger:hover {
+  border-color: rgba(255, 107, 74, 0.65);
+  color: #ff8f75;
 }
 
 @media (max-width: 720px) {
@@ -1316,7 +1511,7 @@ body.page-admin {
 }
 
 body.page-admin .admin-stats {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 @media (max-width: 900px) {
@@ -1446,4 +1641,134 @@ body.cart-open {
   .cart-drawer.is-open {
     right: 0;
   }
+}
+
+/* —— Confirm details modal (before Stripe) —— */
+body.confirm-open {
+  overflow: hidden;
+}
+
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(5, 7, 6, 0.72);
+  backdrop-filter: blur(3px);
+}
+
+.confirm-overlay[hidden] {
+  display: none;
+}
+
+.confirm-modal {
+  position: fixed;
+  z-index: 61;
+  top: 50%;
+  left: 50%;
+  width: min(26rem, calc(100vw - 2rem));
+  transform: translate(-50%, -50%);
+  padding: 1.35rem 1.4rem 1.4rem;
+  background:
+    linear-gradient(180deg, rgba(20, 24, 22, 0.98), rgba(10, 12, 11, 0.99));
+  border: 1px solid var(--line);
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.55);
+}
+
+.confirm-modal[hidden] {
+  display: none;
+}
+
+.confirm-modal__kicker {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 0.4rem;
+}
+
+.confirm-modal__title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.55rem;
+}
+
+.confirm-modal__lead {
+  font-size: 0.84rem;
+  color: var(--fog);
+  margin-bottom: 1.15rem;
+  line-height: 1.5;
+}
+
+.confirm-modal__details {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 1.35rem;
+  padding: 0.95rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.confirm-modal__details dt {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fog);
+  margin-bottom: 0.28rem;
+}
+
+.confirm-modal__details dd {
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.confirm-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  justify-content: flex-end;
+}
+
+.confirm-modal__btn {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, color 0.2s, opacity 0.2s;
+}
+
+.confirm-modal__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.confirm-modal__btn--ghost {
+  background: transparent;
+  color: var(--bone);
+}
+
+.confirm-modal__btn--ghost:hover:not(:disabled) {
+  border-color: rgba(232, 235, 230, 0.35);
+}
+
+.confirm-modal__btn--solid {
+  background: var(--signal);
+  border-color: var(--signal);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.confirm-modal__btn--solid:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.confirm-modal__btn--solid.is-loading {
+  opacity: 0.7;
 }

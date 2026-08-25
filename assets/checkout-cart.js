@@ -7,8 +7,16 @@
   const closeBtn = document.getElementById("cart-close");
   const mountEl = document.getElementById("checkout-mount");
   const statusEl = document.getElementById("cart-status");
+  const confirmOverlay = document.getElementById("confirm-overlay");
+  const confirmModal = document.getElementById("confirm-modal");
+  const confirmName = document.getElementById("confirm-name");
+  const confirmEmail = document.getElementById("confirm-email");
+  const confirmEdit = document.getElementById("confirm-edit");
+  const confirmPay = document.getElementById("confirm-pay");
+  const nameInput = document.getElementById("name");
+  const emailInput = document.getElementById("email");
 
-  if (!form || !submitBtn || !drawer || !mountEl) return;
+  if (!form || !submitBtn || !drawer || !mountEl || !confirmModal || !confirmPay) return;
 
   let checkout = null;
   let stripe = null;
@@ -30,6 +38,10 @@
   function setLoading(loading) {
     submitBtn.classList.toggle("is-loading", loading);
     submitBtn.disabled = loading;
+    if (confirmPay) {
+      confirmPay.disabled = loading;
+      confirmPay.classList.toggle("is-loading", loading);
+    }
   }
 
   function setStatus(message) {
@@ -41,6 +53,28 @@
     }
     statusEl.hidden = false;
     statusEl.textContent = message;
+  }
+
+  function openConfirm() {
+    const name = (nameInput && nameInput.value ? nameInput.value : "").trim();
+    const email = (emailInput && emailInput.value ? emailInput.value : "").trim();
+
+    if (confirmName) confirmName.textContent = name;
+    if (confirmEmail) confirmEmail.textContent = email;
+
+    if (confirmOverlay) confirmOverlay.hidden = false;
+    confirmModal.hidden = false;
+    confirmModal.setAttribute("aria-hidden", "false");
+    document.body.classList.add("confirm-open");
+
+    confirmPay.focus();
+  }
+
+  function closeConfirm() {
+    if (confirmOverlay) confirmOverlay.hidden = true;
+    confirmModal.hidden = true;
+    confirmModal.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("confirm-open");
   }
 
   function openCart() {
@@ -67,7 +101,6 @@
       /* ignore */
     }
 
-    // Stripe only allows one Embedded Checkout object; give it a moment to release.
     await sleep(150);
   }
 
@@ -158,20 +191,19 @@
     instance.mount(frame);
   }
 
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
+  async function startCheckout() {
     if (busy) return;
 
     busy = true;
     clearError();
     setLoading(true);
+    closeConfirm();
 
     const gen = ++generation;
 
     try {
       openCart();
       setStatus("Loading secure checkout…");
-      // Paint the open drawer before Stripe injects its iframe.
       await sleep(40);
 
       if (gen !== generation) return;
@@ -192,7 +224,108 @@
         setLoading(false);
       }
     }
+  }
+
+  function showToast(type, title, message) {
+    document.querySelectorAll(".toast--live").forEach((el) => el.remove());
+
+    const toast = document.createElement("div");
+    toast.className = "toast toast--live toast--" + (type === "success" ? "success" : "error");
+    toast.setAttribute("role", "status");
+    toast.setAttribute("aria-live", "polite");
+    toast.innerHTML =
+      '<span class="toast__bar" aria-hidden="true"></span>' +
+      '<div class="toast__body">' +
+      '<p class="toast__title"></p>' +
+      '<p class="toast__msg"></p>' +
+      "</div>";
+
+    const titleEl = toast.querySelector(".toast__title");
+    const msgEl = toast.querySelector(".toast__msg");
+    if (titleEl) titleEl.textContent = title || "";
+    if (msgEl) msgEl.textContent = message || "";
+
+    document.body.appendChild(toast);
+    window.setTimeout(() => {
+      if (toast.parentNode) toast.remove();
+    }, 5600);
+  }
+
+  async function checkEmailAvailable() {
+    const body = new FormData();
+    body.set("email", emailInput ? emailInput.value.trim() : "");
+
+    const response = await fetch("/api/check-email.php", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "X-Requested-With": "XMLHttpRequest",
+      },
+      body,
+    });
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (_) {
+      throw new Error("Invalid check response.");
+    }
+
+    return data;
+  }
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (busy) return;
+    clearError();
+
+    if (typeof form.reportValidity === "function" && !form.reportValidity()) {
+      return;
+    }
+
+    busy = true;
+    setLoading(true);
+
+    try {
+      const data = await checkEmailAvailable();
+
+      // Fail closed: only open the modal when the API explicitly says available.
+      if (data && data.ok === true && data.available === true) {
+        openConfirm();
+        return;
+      }
+
+      const toast = (data && data.toast) || {};
+      showToast(
+        toast.type || "error",
+        toast.title || "Email already used",
+        toast.message || (data && data.error) || "This email cannot be used."
+      );
+    } catch (_) {
+      showToast("error", "Check failed", "Could not verify email. Please try again.");
+    } finally {
+      busy = false;
+      setLoading(false);
+    }
   });
+
+  confirmPay.addEventListener("click", () => {
+    startCheckout();
+  });
+
+  if (confirmEdit) {
+    confirmEdit.addEventListener("click", () => {
+      closeConfirm();
+      if (emailInput) emailInput.focus();
+    });
+  }
+
+  if (confirmOverlay) {
+    confirmOverlay.addEventListener("click", () => {
+      if (busy) return;
+      closeConfirm();
+    });
+  }
 
   if (closeBtn) {
     closeBtn.addEventListener("click", () => {
@@ -211,10 +344,17 @@
   }
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && drawer.classList.contains("is-open")) {
+    if (event.key !== "Escape") return;
+
+    if (drawer.classList.contains("is-open")) {
       closeCart();
       busy = false;
       setLoading(false);
+      return;
+    }
+
+    if (!confirmModal.hidden && !busy) {
+      closeConfirm();
     }
   });
 })();
