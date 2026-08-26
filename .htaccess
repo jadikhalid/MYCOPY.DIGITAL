@@ -1,4 +1,4 @@
-# Minimal Hostinger / Apache security
+# Minimal Hostinger / Apache security + pretty URL routing
 Options -Indexes
 
 <FilesMatch "\.(sqlite|sqlite3|db|env)$">
@@ -33,3 +33,33 @@ Options -Indexes
 <Files "config.stripe.example.php">
   Require all denied
 </Files>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Trailing slash → no slash (keep assets/ relative paths working)
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(.+)/$ /$1 [R=301,L]
+
+  # Legacy .php → pretty URLs (THE_REQUEST avoids DirectoryIndex loops on /)
+  RewriteCond %{THE_REQUEST} \s/+index\.php[\s?] [NC]
+  RewriteRule ^index\.php$ /home [R=301,L,QSA]
+  RewriteCond %{THE_REQUEST} \s/+attente\.php[\s?] [NC]
+  RewriteRule ^attente\.php$ /waitlist [R=301,L,QSA]
+  RewriteCond %{THE_REQUEST} \s/+vault\.php[\s?] [NC]
+  RewriteRule ^vault\.php$ /studio [R=301,L,QSA]
+  RewriteCond %{THE_REQUEST} \s/+access\.php[\s?] [NC]
+  RewriteRule ^access\.php$ /home [R=301,L,QSA]
+
+  # Old slug alias
+  RewriteRule ^accueil/?$ /home [R=301,L,QSA]
+
+  # Existing files and directories (api, assets, admin, payments, …)
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Pretty slug → front controller (add future pages in routes.php only)
+  RewriteRule ^([a-z0-9-]+)/?$ route.php?r=$1 [L,QSA]
+</IfModule>

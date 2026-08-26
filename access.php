@@ -1,3 +1,3 @@
 <?php
-header('Location: index.php', true, 301);
-exit;
+require __DIR__ . '/routes.php';
+route_redirect('home', 301);

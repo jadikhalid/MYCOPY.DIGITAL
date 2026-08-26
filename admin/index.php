@@ -43,7 +43,7 @@ $total = count($entries);
         <h1 class="admin-title">Waitlist</h1>
       </div>
       <div class="admin-header__actions">
-        <a class="admin-link" href="../index.php">Site</a>
+        <a class="admin-link" href="<?= htmlspecialchars(route_url('home'), ENT_QUOTES, 'UTF-8') ?>">Site</a>
         <form method="post" action="logout.php">
           <button class="btn-ghost" type="submit">Sign out</button>
         </form>

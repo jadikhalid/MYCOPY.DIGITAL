@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 session_start();
 
+require_once __DIR__ . '/routes.php';
+
 const SITE_NAME = 'MYCOPY';
 const SITE_TAGLINE = 'Capture. Train. Choose. Continue.';
 
@@ -25,8 +27,7 @@ function is_authenticated(): bool
 function require_auth(): void
 {
     if (!is_authenticated()) {
-        header('Location: index.php');
-        exit;
+        route_redirect('home');
     }
 }
 

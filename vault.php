@@ -35,7 +35,7 @@ $stamp = date('Y-m-d H:i:s', $since);
     <div class="scanline" aria-hidden="true"></div>
 
     <header class="nav">
-      <a class="brand" href="vault.php"><?= SITE_NAME ?><span>.DIGITAL</span></a>
+      <a class="brand" href="<?= htmlspecialchars(route_url('studio'), ENT_QUOTES, 'UTF-8') ?>"><?= SITE_NAME ?><span>.DIGITAL</span></a>
       <div class="nav__status">Session active</div>
     </header>
 

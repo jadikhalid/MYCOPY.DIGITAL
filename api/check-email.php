@@ -14,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 if (is_authenticated()) {
-    echo json_encode(['ok' => false, 'error' => 'Already authenticated.', 'redirect' => 'vault.php']);
+    echo json_encode(['ok' => false, 'error' => 'Already authenticated.', 'redirect' => route_url('studio')]);
     exit;
 }
 

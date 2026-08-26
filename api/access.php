@@ -13,14 +13,14 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 if (is_authenticated()) {
-    echo json_encode(['ok' => true, 'redirect' => 'vault.php']);
+    echo json_encode(['ok' => true, 'redirect' => route_url('studio')]);
     exit;
 }
 
 $code = (string) ($_POST['code'] ?? '');
 
 if (attempt_login($code)) {
-    echo json_encode(['ok' => true, 'redirect' => 'vault.php']);
+    echo json_encode(['ok' => true, 'redirect' => route_url('studio')]);
     exit;
 }
 

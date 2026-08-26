@@ -8,11 +8,10 @@ $wantsJson = str_contains((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'application
 if (is_authenticated()) {
     if ($wantsJson) {
         header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['ok' => false, 'error' => 'Already authenticated.', 'redirect' => 'vault.php']);
+        echo json_encode(['ok' => false, 'error' => 'Already authenticated.', 'redirect' => route_url('studio')]);
         exit;
     }
-    header('Location: vault.php');
-    exit;
+    route_redirect('studio');
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -22,8 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         echo json_encode(['ok' => false, 'error' => 'Method not allowed.']);
         exit;
     }
-    header('Location: attente.php');
-    exit;
+    route_redirect('waitlist');
 }
 
 $uiMode = (string) ($_POST['ui_mode'] ?? 'embedded_page');
@@ -81,5 +79,5 @@ if (!empty($result['keep_form'])) {
     ];
 }
 
-header('Location: attente.php');
+header('Location: ' . route_url('waitlist'));
 exit;

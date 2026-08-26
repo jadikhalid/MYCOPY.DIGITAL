@@ -19,7 +19,7 @@
     }
 
     try {
-      const response = await fetch("api/access.php", {
+      const response = await fetch("/api/access.php", {
         method: "POST",
         headers: {
           Accept: "application/json",

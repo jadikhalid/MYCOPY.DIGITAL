@@ -62,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$needsSetup) {
       </form>
     <?php endif; ?>
 
-    <p class="admin-back"><a href="../index.php">← Back to site</a></p>
+    <p class="admin-back"><a href="<?= htmlspecialchars(route_url('home'), ENT_QUOTES, 'UTF-8') ?>">← Back to site</a></p>
   </main>
 </body>
 </html>

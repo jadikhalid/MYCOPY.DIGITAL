@@ -3,8 +3,7 @@ require __DIR__ . '/config.php';
 require __DIR__ . '/db.php';
 
 if (is_authenticated()) {
-    header('Location: vault.php');
-    exit;
+    route_redirect('studio');
 }
 
 $toast = $_SESSION['toast'] ?? null;
@@ -51,8 +50,8 @@ $termsDoc = terms_of_sale_document();
     <div class="scanline" aria-hidden="true"></div>
 
     <header class="nav">
-      <a class="brand" href="index.php"><?= SITE_NAME ?><span>.DIGITAL</span></a>
-      <a class="nav__link" href="index.php">Access</a>
+      <a class="brand" href="<?= htmlspecialchars(route_url('home'), ENT_QUOTES, 'UTF-8') ?>"><?= SITE_NAME ?><span>.DIGITAL</span></a>
+      <a class="nav__link" href="<?= htmlspecialchars(route_url('home'), ENT_QUOTES, 'UTF-8') ?>">Access</a>
     </header>
 
     <main class="hero hero--waitlist">

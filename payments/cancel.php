@@ -21,8 +21,8 @@ require __DIR__ . '/../config.php';
     <div class="scanline" aria-hidden="true"></div>
 
     <header class="nav">
-      <a class="brand" href="../index.php"><?= SITE_NAME ?><span>.DIGITAL</span></a>
-      <a class="nav__link" href="../attente.php">Waitlist</a>
+      <a class="brand" href="<?= htmlspecialchars(route_url('home'), ENT_QUOTES, 'UTF-8') ?>"><?= SITE_NAME ?><span>.DIGITAL</span></a>
+      <a class="nav__link" href="<?= htmlspecialchars(route_url('waitlist'), ENT_QUOTES, 'UTF-8') ?>">Waitlist</a>
     </header>
 
     <main class="hero">
@@ -34,7 +34,7 @@ require __DIR__ . '/../config.php';
           You can restart checkout whenever you’re ready — $49 USD.
         </p>
         <div class="access__row">
-          <a class="access__btn" href="../attente.php">Return to waitlist</a>
+          <a class="access__btn" href="<?= htmlspecialchars(route_url('waitlist'), ENT_QUOTES, 'UTF-8') ?>">Return to waitlist</a>
         </div>
       </div>
     </main>

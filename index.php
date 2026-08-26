@@ -2,8 +2,7 @@
 require __DIR__ . '/config.php';
 
 if (is_authenticated()) {
-    header('Location: vault.php');
-    exit;
+    route_redirect('studio');
 }
 ?>
 <!DOCTYPE html>
@@ -36,10 +35,10 @@ if (is_authenticated()) {
     <div class="scanline" aria-hidden="true"></div>
 
     <header class="nav">
-      <a class="brand" href="index.php"><?= SITE_NAME ?><span>.DIGITAL</span></a>
+      <a class="brand" href="<?= htmlspecialchars(route_url('home'), ENT_QUOTES, 'UTF-8') ?>"><?= SITE_NAME ?><span>.DIGITAL</span></a>
       <nav class="nav__links" aria-label="Navigation">
         <a class="nav__link" href="#protocol">Protocol</a>
-        <a class="nav__link" href="attente.php">Waitlist</a>
+        <a class="nav__link" href="<?= htmlspecialchars(route_url('waitlist'), ENT_QUOTES, 'UTF-8') ?>">Waitlist</a>
       </nav>
     </header>
 
@@ -61,7 +60,7 @@ if (is_authenticated()) {
           detach, or stay until you become one.
         </p>
 
-        <form class="access access--ajax" method="post" action="index.php" autocomplete="off" novalidate>
+        <form class="access access--ajax" method="post" action="<?= htmlspecialchars(route_url('home'), ENT_QUOTES, 'UTF-8') ?>" autocomplete="off" novalidate>
           <label class="access__label" for="code">Access code</label>
           <div class="access__row">
             <input
@@ -179,7 +178,7 @@ if (is_authenticated()) {
       </p>
 
       <div class="offer__cta">
-        <a class="access__btn offer__btn" href="attente.php">Join the waitlist</a>
+        <a class="access__btn offer__btn" href="<?= htmlspecialchars(route_url('waitlist'), ENT_QUOTES, 'UTF-8') ?>">Join the waitlist</a>
         <a class="offer__link" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">Back to studio</a>
       </div>
     </div>

@@ -21,8 +21,8 @@ require __DIR__ . '/../config.php';
     <div class="scanline" aria-hidden="true"></div>
 
     <header class="nav">
-      <a class="brand" href="../index.php"><?= SITE_NAME ?><span>.DIGITAL</span></a>
-      <a class="nav__link" href="../index.php">Access</a>
+      <a class="brand" href="<?= htmlspecialchars(route_url('home'), ENT_QUOTES, 'UTF-8') ?>"><?= SITE_NAME ?><span>.DIGITAL</span></a>
+      <a class="nav__link" href="<?= htmlspecialchars(route_url('home'), ENT_QUOTES, 'UTF-8') ?>">Access</a>
     </header>
 
     <main class="hero">
@@ -34,7 +34,7 @@ require __DIR__ . '/../config.php';
           Check your inbox (and spam folder) in the next few minutes.
         </p>
         <div class="access__row">
-          <a class="access__btn" href="../index.php">Back to studio access</a>
+          <a class="access__btn" href="<?= htmlspecialchars(route_url('home'), ENT_QUOTES, 'UTF-8') ?>">Back to studio access</a>
         </div>
       </div>
     </main>
