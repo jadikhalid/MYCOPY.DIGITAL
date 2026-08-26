@@ -15,6 +15,10 @@
   const confirmPay = document.getElementById("confirm-pay");
   const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
+  const termsInput = document.getElementById("terms_accepted");
+  const termsOverlay = document.getElementById("terms-overlay");
+  const termsDrawer = document.getElementById("terms-drawer");
+  const termsCloseBtn = document.getElementById("terms-close");
 
   if (!form || !submitBtn || !drawer || !mountEl || !confirmModal || !confirmPay) return;
 
@@ -53,6 +57,41 @@
     }
     statusEl.hidden = false;
     statusEl.textContent = message;
+  }
+
+  let termsCloseTimer = 0;
+
+  function openTerms() {
+    if (!termsDrawer || !termsOverlay) return;
+    if (termsCloseTimer) {
+      window.clearTimeout(termsCloseTimer);
+      termsCloseTimer = 0;
+    }
+    termsOverlay.classList.remove("is-leaving");
+    termsOverlay.hidden = false;
+    // Force reflow so the open transition always runs after a fast re-open.
+    void termsDrawer.offsetWidth;
+    termsDrawer.classList.add("is-open");
+    termsDrawer.setAttribute("aria-hidden", "false");
+    document.body.classList.add("terms-open");
+    if (termsCloseBtn) termsCloseBtn.focus();
+  }
+
+  function closeTerms() {
+    if (!termsDrawer || !termsOverlay) return;
+    if (!termsDrawer.classList.contains("is-open") && termsOverlay.hidden) return;
+
+    termsDrawer.classList.remove("is-open");
+    termsDrawer.setAttribute("aria-hidden", "true");
+    termsOverlay.classList.add("is-leaving");
+
+    if (termsCloseTimer) window.clearTimeout(termsCloseTimer);
+    termsCloseTimer = window.setTimeout(() => {
+      termsOverlay.hidden = true;
+      termsOverlay.classList.remove("is-leaving");
+      document.body.classList.remove("terms-open");
+      termsCloseTimer = 0;
+    }, 420);
   }
 
   function openConfirm() {
@@ -279,6 +318,16 @@
     if (busy) return;
     clearError();
 
+    if (termsInput && !termsInput.checked) {
+      showToast(
+        "error",
+        "Terms required",
+        "You must accept the Terms of Sale before continuing."
+      );
+      termsInput.focus();
+      return;
+    }
+
     if (typeof form.reportValidity === "function" && !form.reportValidity()) {
       return;
     }
@@ -343,8 +392,33 @@
     });
   }
 
+  document.querySelectorAll(".js-open-terms").forEach((el) => {
+    el.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      openTerms();
+    });
+  });
+
+  if (termsCloseBtn) {
+    termsCloseBtn.addEventListener("click", () => {
+      closeTerms();
+    });
+  }
+
+  if (termsOverlay) {
+    termsOverlay.addEventListener("click", () => {
+      closeTerms();
+    });
+  }
+
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
+
+    if (termsDrawer && termsDrawer.classList.contains("is-open")) {
+      closeTerms();
+      return;
+    }
 
     if (drawer.classList.contains("is-open")) {
       closeCart();

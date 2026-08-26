@@ -83,6 +83,7 @@ $total = count($entries);
               <th>Email</th>
               <th>Status</th>
               <th>Studio code</th>
+              <th>Terms</th>
               <th>Signed up</th>
               <th>Action</th>
             </tr>
@@ -96,6 +97,17 @@ $total = count($entries);
                 }
                 $isApproved = $status === 'approved';
                 $studioCode = (string) ($entry['studio_code'] ?? '');
+                $termsAt = (string) ($entry['terms_accepted_at'] ?? '');
+                $termsVersion = (string) ($entry['terms_version'] ?? '');
+                $termsIp = (string) ($entry['terms_accepted_ip'] ?? '');
+                $termsHash = (string) ($entry['terms_text_hash'] ?? '');
+                $termsUa = (string) ($entry['terms_accepted_ua'] ?? '');
+                $termsLang = (string) ($entry['terms_accepted_lang'] ?? '');
+                $termsMethod = (string) ($entry['terms_accept_method'] ?? '');
+                $termsRef = (string) ($entry['terms_accepted_referer'] ?? '');
+                $termsArchive = (string) ($entry['terms_archive_path'] ?? '');
+                $stripeSession = (string) ($entry['stripe_session_id'] ?? '');
+                $termsSnapshot = (string) ($entry['terms_snapshot'] ?? '');
               ?>
               <tr>
                 <td><code><?= htmlspecialchars((string) $entry['ticket'], ENT_QUOTES, 'UTF-8') ?></code></td>
@@ -109,6 +121,31 @@ $total = count($entries);
                 <td>
                   <?php if ($studioCode !== ''): ?>
                     <code><?= htmlspecialchars($studioCode, ENT_QUOTES, 'UTF-8') ?></code>
+                  <?php else: ?>
+                    <span class="admin-muted">—</span>
+                  <?php endif; ?>
+                </td>
+                <td class="admin-terms-cell">
+                  <?php if ($termsAt !== ''): ?>
+                    <details class="admin-terms">
+                      <summary>
+                        v<?= htmlspecialchars($termsVersion !== '' ? $termsVersion : '?', ENT_QUOTES, 'UTF-8') ?>
+                        · <?= htmlspecialchars(admin_format_date($termsAt), ENT_QUOTES, 'UTF-8') ?>
+                      </summary>
+                      <dl class="admin-terms__dl">
+                        <div><dt>IP</dt><dd><code><?= htmlspecialchars($termsIp !== '' ? $termsIp : '—', ENT_QUOTES, 'UTF-8') ?></code></dd></div>
+                        <div><dt>Method</dt><dd><?= htmlspecialchars($termsMethod !== '' ? $termsMethod : '—', ENT_QUOTES, 'UTF-8') ?></dd></div>
+                        <div><dt>Hash</dt><dd><code class="admin-terms__hash"><?= htmlspecialchars($termsHash !== '' ? $termsHash : '—', ENT_QUOTES, 'UTF-8') ?></code></dd></div>
+                        <div><dt>UA</dt><dd class="admin-terms__ua"><?= htmlspecialchars($termsUa !== '' ? $termsUa : '—', ENT_QUOTES, 'UTF-8') ?></dd></div>
+                        <div><dt>Lang</dt><dd><?= htmlspecialchars($termsLang !== '' ? $termsLang : '—', ENT_QUOTES, 'UTF-8') ?></dd></div>
+                        <div><dt>Referer</dt><dd class="admin-terms__ua"><?= htmlspecialchars($termsRef !== '' ? $termsRef : '—', ENT_QUOTES, 'UTF-8') ?></dd></div>
+                        <div><dt>Archive</dt><dd><code><?= htmlspecialchars($termsArchive !== '' ? $termsArchive : '—', ENT_QUOTES, 'UTF-8') ?></code></dd></div>
+                        <div><dt>Stripe</dt><dd><code class="admin-terms__hash"><?= htmlspecialchars($stripeSession !== '' ? $stripeSession : '—', ENT_QUOTES, 'UTF-8') ?></code></dd></div>
+                      </dl>
+                      <?php if ($termsSnapshot !== ''): ?>
+                        <pre class="admin-terms__snapshot"><?= htmlspecialchars($termsSnapshot, ENT_QUOTES, 'UTF-8') ?></pre>
+                      <?php endif; ?>
+                    </details>
                   <?php else: ?>
                     <span class="admin-muted">—</span>
                   <?php endif; ?>

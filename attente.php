@@ -18,6 +18,7 @@ $toastMessage = is_array($toast) ? (string) ($toast['message'] ?? '') : '';
 
 $amountLabel = '$49';
 $stripePublishableKey = stripe_publishable_key();
+$termsDoc = terms_of_sale_document();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -32,10 +33,10 @@ $stripePublishableKey = stripe_publishable_key();
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="icon" href="favicon.ico" sizes="any">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="assets/style.css?v=18">
+  <link rel="stylesheet" href="assets/style.css?v=31">
   <script src="https://js.stripe.com/v3/"></script>
 </head>
-<body>
+<body class="page-waitlist">
   <div class="stage">
     <div class="stage__visual" aria-hidden="true">
       <img
@@ -86,6 +87,19 @@ $stripePublishableKey = stripe_publishable_key();
             maxlength="180"
             value="<?= htmlspecialchars((string) ($form['email'] ?? ''), ENT_QUOTES, 'UTF-8') ?>"
           >
+          <label class="terms-accept" for="terms_accepted">
+            <input
+              type="checkbox"
+              id="terms_accepted"
+              name="terms_accepted"
+              value="1"
+              required
+            >
+            <span>
+              I agree to the
+              <button type="button" class="js-open-terms terms-accept__link">Terms of Sale</button>.
+            </span>
+          </label>
           <div class="access__row access__row--end">
             <button class="access__btn" id="reserve-submit" type="submit">
               <span class="access__btn-label">Pay <?= htmlspecialchars($amountLabel, ENT_QUOTES, 'UTF-8') ?> — Reserve</span>
@@ -183,6 +197,41 @@ $stripePublishableKey = stripe_publishable_key();
     </div>
   </aside>
 
+  <div class="terms-overlay" id="terms-overlay" hidden></div>
+  <aside class="terms-drawer" id="terms-drawer" aria-hidden="true" aria-label="Terms of Sale">
+    <header class="terms-drawer__head">
+      <div>
+        <p class="terms-drawer__kicker">Legal</p>
+        <h2 class="terms-drawer__title" id="terms-drawer-title"><?= htmlspecialchars($termsDoc['title'], ENT_QUOTES, 'UTF-8') ?></h2>
+      </div>
+      <button type="button" class="terms-drawer__close" id="terms-close" aria-label="Close Terms of Sale">×</button>
+    </header>
+    <div class="terms-drawer__body">
+      <p class="terms-drawer__lead">
+        <?= htmlspecialchars($termsDoc['lead'], ENT_QUOTES, 'UTF-8') ?>
+      </p>
+      <p class="terms-drawer__meta"><?= htmlspecialchars($termsDoc['meta'], ENT_QUOTES, 'UTF-8') ?></p>
+
+      <h3 class="terms-drawer__heading"><?= htmlspecialchars($termsDoc['heading'], ENT_QUOTES, 'UTF-8') ?></h3>
+
+      <ol class="terms-drawer__list">
+        <?php foreach ($termsDoc['sections'] as $section): ?>
+          <li>
+            <span class="terms-drawer__num" aria-hidden="true"><?= htmlspecialchars($section['num'], ENT_QUOTES, 'UTF-8') ?></span>
+            <div>
+              <h4><?= htmlspecialchars($section['title'], ENT_QUOTES, 'UTF-8') ?></h4>
+              <p><?= htmlspecialchars($section['body'], ENT_QUOTES, 'UTF-8') ?></p>
+            </div>
+          </li>
+        <?php endforeach; ?>
+      </ol>
+
+      <p class="terms-drawer__close-note">
+        <?= htmlspecialchars($termsDoc['close'], ENT_QUOTES, 'UTF-8') ?>
+      </p>
+    </div>
+  </aside>
+
   <div class="confirm-overlay" id="confirm-overlay" hidden></div>
   <div
     class="confirm-modal"
@@ -196,7 +245,12 @@ $stripePublishableKey = stripe_publishable_key();
     <p class="confirm-modal__kicker">Confirm details</p>
     <h2 class="confirm-modal__title" id="confirm-title">Before payment</h2>
     <p class="confirm-modal__lead">
-      Your ticket and protocol PDF will be sent to this email only. Please check carefully.
+      Your ticket and Protocol Guide book will be sent to this email only. Please check carefully.
+    </p>
+    <p class="confirm-modal__terms">
+      By confirming, you accept the
+      <button type="button" class="js-open-terms terms-accept__link">Terms of Sale</button>
+      (no refunds; reservation ≠ Protocol processing).
     </p>
     <dl class="confirm-modal__details">
       <div>
@@ -235,6 +289,6 @@ $stripePublishableKey = stripe_publishable_key();
   <script>
     window.MYCOPY_STRIPE_PK = <?= json_encode($stripePublishableKey, JSON_UNESCAPED_SLASHES) ?>;
   </script>
-  <script src="assets/checkout-cart.js?v=10" defer></script>
+  <script src="assets/checkout-cart.js?v=13" defer></script>
 </body>
 </html>

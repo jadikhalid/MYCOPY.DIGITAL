@@ -34,7 +34,8 @@ if ($uiMode !== 'hosted_page') {
 $result = start_checkout_reservation(
     (string) ($_POST['name'] ?? ''),
     (string) ($_POST['email'] ?? ''),
-    $uiMode
+    $uiMode,
+    !empty($_POST['terms_accepted'])
 );
 
 if ($wantsJson) {

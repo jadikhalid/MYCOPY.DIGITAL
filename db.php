@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/mail/SmtpMailer.php';
 require_once __DIR__ . '/payments/StripeClient.php';
+require_once __DIR__ . '/legal/terms_of_sale.php';
 
 const DB_PATH = __DIR__ . '/data/mycopy.sqlite';
 
@@ -73,6 +74,16 @@ function migrate_waitlist_schema(PDO $pdo): void
         'currency' => 'ALTER TABLE waitlist ADD COLUMN currency TEXT',
         'paid_at' => 'ALTER TABLE waitlist ADD COLUMN paid_at TEXT',
         'pdf_sent' => 'ALTER TABLE waitlist ADD COLUMN pdf_sent INTEGER NOT NULL DEFAULT 0',
+        'terms_accepted_at' => 'ALTER TABLE waitlist ADD COLUMN terms_accepted_at TEXT',
+        'terms_version' => 'ALTER TABLE waitlist ADD COLUMN terms_version TEXT',
+        'terms_text_hash' => 'ALTER TABLE waitlist ADD COLUMN terms_text_hash TEXT',
+        'terms_snapshot' => 'ALTER TABLE waitlist ADD COLUMN terms_snapshot TEXT',
+        'terms_archive_path' => 'ALTER TABLE waitlist ADD COLUMN terms_archive_path TEXT',
+        'terms_accepted_ip' => 'ALTER TABLE waitlist ADD COLUMN terms_accepted_ip TEXT',
+        'terms_accepted_ua' => 'ALTER TABLE waitlist ADD COLUMN terms_accepted_ua TEXT',
+        'terms_accepted_lang' => 'ALTER TABLE waitlist ADD COLUMN terms_accepted_lang TEXT',
+        'terms_accepted_referer' => 'ALTER TABLE waitlist ADD COLUMN terms_accepted_referer TEXT',
+        'terms_accept_method' => 'ALTER TABLE waitlist ADD COLUMN terms_accept_method TEXT',
     ];
 
     foreach ($additions as $col => $sql) {
@@ -130,7 +141,11 @@ function fetch_waitlist_entries(): array
 {
     $stmt = db()->query(
         'SELECT id, ticket, name, email, created_at, notified, status, studio_code,
-                access_sent_at, payment_status, amount_cents, currency, paid_at, pdf_sent
+                access_sent_at, payment_status, amount_cents, currency, paid_at, pdf_sent,
+                stripe_session_id,
+                terms_accepted_at, terms_version, terms_text_hash, terms_snapshot,
+                terms_archive_path, terms_accepted_ip, terms_accepted_ua,
+                terms_accepted_lang, terms_accepted_referer, terms_accept_method
          FROM waitlist
          ORDER BY created_at DESC'
     );
@@ -312,10 +327,22 @@ function check_waitlist_email(string $email): array
  *   keep_form?: bool
  * }
  */
-function start_checkout_reservation(string $name, string $email, string $uiMode = 'embedded_page'): array
+function start_checkout_reservation(string $name, string $email, string $uiMode = 'embedded_page', bool $termsAccepted = false): array
 {
     $name = trim(preg_replace('/\s+/u', ' ', $name) ?? '');
     $email = strtolower(trim($email));
+
+    if (!$termsAccepted) {
+        return [
+            'ok' => false,
+            'keep_form' => true,
+            'toast' => [
+                'type' => 'error',
+                'title' => 'Terms required',
+                'message' => 'You must accept the Terms of Sale before payment.',
+            ],
+        ];
+    }
 
     if ($name === '' || mb_strlen($name) < 2) {
         return [
@@ -388,14 +415,39 @@ function start_checkout_reservation(string $name, string $email, string $uiMode 
         ];
     }
 
+    $terms = capture_terms_acceptance_evidence();
+
     if ($row) {
         $waitlistId = (int) $row['id'];
         $ticket = (string) $row['ticket'];
         $pdo->prepare(
             "UPDATE waitlist
-             SET name = :name, status = 'pending_payment', payment_status = 'unpaid'
+             SET name = :name, status = 'pending_payment', payment_status = 'unpaid',
+                 terms_accepted_at = :terms_accepted_at,
+                 terms_version = :terms_version,
+                 terms_text_hash = :terms_text_hash,
+                 terms_snapshot = :terms_snapshot,
+                 terms_archive_path = :terms_archive_path,
+                 terms_accepted_ip = :terms_accepted_ip,
+                 terms_accepted_ua = :terms_accepted_ua,
+                 terms_accepted_lang = :terms_accepted_lang,
+                 terms_accepted_referer = :terms_accepted_referer,
+                 terms_accept_method = :terms_accept_method
              WHERE id = :id"
-        )->execute(['name' => $name, 'id' => $waitlistId]);
+        )->execute([
+            'name' => $name,
+            'terms_accepted_at' => $terms['terms_accepted_at'],
+            'terms_version' => $terms['terms_version'],
+            'terms_text_hash' => $terms['terms_text_hash'],
+            'terms_snapshot' => $terms['terms_snapshot'],
+            'terms_archive_path' => $terms['terms_archive_path'],
+            'terms_accepted_ip' => $terms['terms_accepted_ip'],
+            'terms_accepted_ua' => $terms['terms_accepted_ua'],
+            'terms_accepted_lang' => $terms['terms_accepted_lang'],
+            'terms_accepted_referer' => $terms['terms_accepted_referer'],
+            'terms_accept_method' => $terms['terms_accept_method'],
+            'id' => $waitlistId,
+        ]);
     } else {
         try {
             $pdo->beginTransaction();
@@ -403,10 +455,16 @@ function start_checkout_reservation(string $name, string $email, string $uiMode 
             $stmt = $pdo->prepare(
                 "INSERT INTO waitlist (
                     ticket, name, email, phone, created_at, notified, status,
-                    payment_status, amount_cents, currency, pdf_sent
+                    payment_status, amount_cents, currency, pdf_sent,
+                    terms_accepted_at, terms_version, terms_text_hash, terms_snapshot,
+                    terms_archive_path, terms_accepted_ip, terms_accepted_ua,
+                    terms_accepted_lang, terms_accepted_referer, terms_accept_method
                  ) VALUES (
                     :ticket, :name, :email, NULL, :created_at, 0, 'pending_payment',
-                    'unpaid', :amount_cents, :currency, 0
+                    'unpaid', :amount_cents, :currency, 0,
+                    :terms_accepted_at, :terms_version, :terms_text_hash, :terms_snapshot,
+                    :terms_archive_path, :terms_accepted_ip, :terms_accepted_ua,
+                    :terms_accepted_lang, :terms_accepted_referer, :terms_accept_method
                  )"
             );
 
@@ -417,6 +475,16 @@ function start_checkout_reservation(string $name, string $email, string $uiMode 
                 'created_at' => gmdate('c'),
                 'amount_cents' => $amount,
                 'currency' => $currency,
+                'terms_accepted_at' => $terms['terms_accepted_at'],
+                'terms_version' => $terms['terms_version'],
+                'terms_text_hash' => $terms['terms_text_hash'],
+                'terms_snapshot' => $terms['terms_snapshot'],
+                'terms_archive_path' => $terms['terms_archive_path'],
+                'terms_accepted_ip' => $terms['terms_accepted_ip'],
+                'terms_accepted_ua' => $terms['terms_accepted_ua'],
+                'terms_accepted_lang' => $terms['terms_accepted_lang'],
+                'terms_accepted_referer' => $terms['terms_accepted_referer'],
+                'terms_accept_method' => $terms['terms_accept_method'],
             ]);
 
             $waitlistId = (int) $pdo->lastInsertId();
