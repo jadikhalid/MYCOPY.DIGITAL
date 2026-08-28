@@ -23,6 +23,13 @@ foreach ($entries as $entry) {
 }
 
 $total = count($entries);
+$founderCode = founder_studio_code();
+$founderProtocol = null;
+if ($founderCode !== '') {
+    require_once __DIR__ . '/../protocol.php';
+    ensure_founder_protocol();
+    $founderProtocol = fetch_founder_protocol_row();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -64,6 +71,29 @@ $total = count($entries);
         <strong><?= $total ?></strong>
       </div>
     </div>
+
+    <?php if ($founderCode !== ''): ?>
+      <section class="admin-founder" aria-label="Founder studio access">
+        <p class="admin-founder__kicker">Founder · cobaye</p>
+        <div class="admin-founder__row">
+          <div>
+            <h2 class="admin-founder__title">Your studio code</h2>
+            <p class="admin-founder__lead">Enter this on <?= htmlspecialchars(route_url('home'), ENT_QUOTES, 'UTF-8') ?> to open your protocol studio.</p>
+          </div>
+          <code class="admin-founder__code"><?= htmlspecialchars($founderCode, ENT_QUOTES, 'UTF-8') ?></code>
+        </div>
+        <?php if (is_array($founderProtocol)): ?>
+          <p class="admin-founder__meta">
+            Protocol phase:
+            <strong><?= htmlspecialchars((string) ($founderProtocol['current_phase'] ?? 'intake'), ENT_QUOTES, 'UTF-8') ?></strong>
+            <?php if (!empty($founderProtocol['intake_completed_at'])): ?>
+              · intake completed <?= htmlspecialchars(admin_format_date((string) $founderProtocol['intake_completed_at']), ENT_QUOTES, 'UTF-8') ?>
+            <?php endif; ?>
+          </p>
+        <?php endif; ?>
+        <p class="admin-founder__hint">Set <code>founder_studio_code</code> in <code>config.admin.php</code> (not committed).</p>
+      </section>
+    <?php endif; ?>
 
     <?php if ($flash !== null): ?>
       <div class="admin-flash admin-flash--<?= htmlspecialchars($flash['type'], ENT_QUOTES, 'UTF-8') ?>" role="status">

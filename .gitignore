@@ -3,3 +3,4 @@ data/*
 config.smtp.php
 config.admin.php
 config.stripe.php
+config.gemini.php
