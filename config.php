@@ -19,32 +19,6 @@ const ACCESS_CODES = [
     'MYCOPY',
 ];
 
-function is_founder_session(): bool
-{
-    return !empty($_SESSION['mycopy_founder']);
-}
-
-function founder_studio_code(): string
-{
-    static $code = null;
-
-    if ($code !== null) {
-        return $code;
-    }
-
-    $path = __DIR__ . '/config.admin.php';
-    if (!is_file($path)) {
-        $code = '';
-        return $code;
-    }
-
-    /** @var array<string, mixed> $cfg */
-    $cfg = require $path;
-    $code = strtoupper(trim((string) ($cfg['founder_studio_code'] ?? '')));
-
-    return $code;
-}
-
 function is_authenticated(): bool
 {
     return !empty($_SESSION['mycopy_auth']);
@@ -69,20 +43,6 @@ function attempt_login(string $code): bool
         $_SESSION['mycopy_code'] = $normalized;
         $_SESSION['mycopy_at'] = time();
         $_SESSION['mycopy_waitlist_id'] = null;
-        $_SESSION['mycopy_founder'] = false;
-        return true;
-    }
-
-    $founderCode = founder_studio_code();
-    if ($founderCode !== '' && $normalized === $founderCode) {
-        require_once __DIR__ . '/db.php';
-        require_once __DIR__ . '/protocol.php';
-        ensure_founder_protocol();
-        $_SESSION['mycopy_auth'] = true;
-        $_SESSION['mycopy_code'] = $founderCode;
-        $_SESSION['mycopy_at'] = time();
-        $_SESSION['mycopy_waitlist_id'] = null;
-        $_SESSION['mycopy_founder'] = true;
         return true;
     }
 
@@ -97,7 +57,6 @@ function attempt_login(string $code): bool
     $_SESSION['mycopy_code'] = (string) $access['studio_code'];
     $_SESSION['mycopy_at'] = time();
     $_SESSION['mycopy_waitlist_id'] = (int) $access['id'];
-    $_SESSION['mycopy_founder'] = false;
 
     return true;
 }

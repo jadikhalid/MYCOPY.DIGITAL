@@ -55,82 +55,18 @@ function db(): PDO
     );
 
     migrate_waitlist_schema($pdo);
-    migrate_protocol_schema($pdo);
+    drop_protocol_tables($pdo);
 
     return $pdo;
 }
 
-function migrate_protocol_schema(PDO $pdo): void
+/** One-time cleanup: remove obsolete founder-protocol tables. */
+function drop_protocol_tables(PDO $pdo): void
 {
-    $pdo->exec(
-        'CREATE TABLE IF NOT EXISTS protocol_subjects (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            subject_kind TEXT NOT NULL DEFAULT \'founder\',
-            subject_ref TEXT NOT NULL UNIQUE,
-            studio_code TEXT NOT NULL UNIQUE,
-            display_name TEXT,
-            current_phase TEXT NOT NULL DEFAULT \'capture\',
-            capture_photo TEXT,
-            capture_confirmed_at TEXT,
-            created_at TEXT NOT NULL,
-            updated_at TEXT NOT NULL
-        )'
-    );
-
-    $pdo->exec(
-        'CREATE TABLE IF NOT EXISTS protocol_messages (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            subject_id INTEGER NOT NULL,
-            role TEXT NOT NULL,
-            content TEXT NOT NULL,
-            created_at TEXT NOT NULL,
-            FOREIGN KEY (subject_id) REFERENCES protocol_subjects(id) ON DELETE CASCADE
-        )'
-    );
-
-    $pdo->exec(
-        'CREATE INDEX IF NOT EXISTS idx_protocol_messages_subject
-         ON protocol_messages (subject_id, id)'
-    );
-
-    $pdo->exec(
-        'CREATE TABLE IF NOT EXISTS protocol_profile_fields (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            subject_id INTEGER NOT NULL,
-            section TEXT NOT NULL,
-            field_key TEXT NOT NULL,
-            value TEXT NOT NULL,
-            confidence REAL NOT NULL DEFAULT 0.8,
-            updated_at TEXT NOT NULL,
-            UNIQUE(subject_id, section, field_key),
-            FOREIGN KEY (subject_id) REFERENCES protocol_subjects(id) ON DELETE CASCADE
-        )'
-    );
-
-    $pdo->exec(
-        'CREATE TABLE IF NOT EXISTS protocol_intake (
-            subject_id INTEGER PRIMARY KEY,
-            first_name TEXT,
-            last_name TEXT,
-            age TEXT,
-            father_first_name TEXT,
-            father_last_name TEXT,
-            mother_first_name TEXT,
-            mother_last_name TEXT,
-            photo_face TEXT,
-            photo_profile_left TEXT,
-            photo_profile_right TEXT,
-            completed_at TEXT,
-            updated_at TEXT,
-            FOREIGN KEY (subject_id) REFERENCES protocol_subjects(id) ON DELETE CASCADE
-        )'
-    );
-
-    $subjectCols = $pdo->query('PRAGMA table_info(protocol_subjects)')->fetchAll();
-    $subjectNames = array_column($subjectCols, 'name');
-    if (!in_array('intake_completed_at', $subjectNames, true)) {
-        $pdo->exec('ALTER TABLE protocol_subjects ADD COLUMN intake_completed_at TEXT');
-    }
+    $pdo->exec('DROP TABLE IF EXISTS protocol_intake');
+    $pdo->exec('DROP TABLE IF EXISTS protocol_profile_fields');
+    $pdo->exec('DROP TABLE IF EXISTS protocol_messages');
+    $pdo->exec('DROP TABLE IF EXISTS protocol_subjects');
 }
 
 function migrate_waitlist_schema(PDO $pdo): void
@@ -183,12 +119,7 @@ function generate_studio_code(PDO $pdo): string
         $code = 'STU-' . strtoupper(substr(bin2hex(random_bytes(4)), 0, 6));
         $check = $pdo->prepare('SELECT 1 FROM waitlist WHERE studio_code = :code LIMIT 1');
         $check->execute(['code' => $code]);
-        if ($check->fetch()) {
-            continue;
-        }
-        $checkProto = $pdo->prepare('SELECT 1 FROM protocol_subjects WHERE studio_code = :code LIMIT 1');
-        $checkProto->execute(['code' => $code]);
-    } while ($checkProto->fetch());
+    } while ($check->fetch());
 
     return $code;
 }
