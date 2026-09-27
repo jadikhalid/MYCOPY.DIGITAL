@@ -46,6 +46,10 @@ Options -Indexes
   RewriteEngine On
   RewriteBase /
 
+  # Page slugs that must win over a same-named leftover folder on the server
+  RewriteRule ^studio/$ /studio [R=301,L,QSA]
+  RewriteRule ^studio$ route.php?r=studio [L,QSA]
+
   # Trailing slash → no slash (keep assets/ relative paths working)
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^(.+)/$ /$1 [R=301,L]
