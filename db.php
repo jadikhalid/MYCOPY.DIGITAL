@@ -55,9 +55,38 @@ function db(): PDO
     );
 
     migrate_waitlist_schema($pdo);
+    migrate_studio_schema($pdo);
     drop_protocol_tables($pdo);
 
     return $pdo;
+}
+
+function migrate_studio_schema(PDO $pdo): void
+{
+    $pdo->exec(
+        'CREATE TABLE IF NOT EXISTS studio_subjects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            studio_code TEXT NOT NULL UNIQUE,
+            waitlist_id INTEGER,
+            first_name TEXT,
+            last_name TEXT,
+            birth_date TEXT,
+            character_text TEXT,
+            photo_face TEXT,
+            photo_profile_left TEXT,
+            photo_profile_right TEXT,
+            capture_step INTEGER NOT NULL DEFAULT 1,
+            completed_at TEXT,
+            created_at TEXT NOT NULL,
+            updated_at TEXT NOT NULL
+        )'
+    );
+
+    $cols = $pdo->query('PRAGMA table_info(studio_subjects)')->fetchAll();
+    $names = array_column($cols, 'name');
+    if (!in_array('capture_step', $names, true)) {
+        $pdo->exec('ALTER TABLE studio_subjects ADD COLUMN capture_step INTEGER NOT NULL DEFAULT 1');
+    }
 }
 
 /** One-time cleanup: remove obsolete founder-protocol tables. */
