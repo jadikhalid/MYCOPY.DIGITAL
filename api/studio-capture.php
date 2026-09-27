@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 require __DIR__ . '/../config.php';
 require __DIR__ . '/../db.php';
-require __DIR__ . '/../studio/capture.php';
+require __DIR__ . '/../studio-core/capture.php';
 
 header('Content-Type: application/json; charset=utf-8');
 

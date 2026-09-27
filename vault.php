@@ -3,7 +3,7 @@ require __DIR__ . '/config.php';
 require_auth();
 
 require_once __DIR__ . '/db.php';
-require_once __DIR__ . '/studio/capture.php';
+require_once __DIR__ . '/studio-core/capture.php';
 
 $subject = studio_subject_for_session();
 $complete = studio_subject_is_complete($subject);
