@@ -27,17 +27,17 @@ if ($complete && !empty($fields['birth_date'])) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-  <link rel="icon" href="favicon.ico" sizes="any">
-  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="assets/style.css?v=52">
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <link rel="stylesheet" href="/assets/style.css?v=52">
 </head>
 <body class="page-studio-capture">
   <div class="stage stage--vault">
     <div class="stage__visual" aria-hidden="true">
       <img
         class="stage__img"
-        src="assets/human-and-copy.png"
+        src="/assets/human-and-copy.png"
         alt=""
         width="1920"
         height="1080"
@@ -230,7 +230,7 @@ if ($complete && !empty($fields['birth_date'])) {
       <?php endif; ?>
 
       <div class="vault__actions">
-        <form method="post" action="logout.php" id="end-session-form">
+        <form method="post" action="/logout.php" id="end-session-form">
           <button class="btn-ghost" type="submit">End session</button>
         </form>
         <?php if (!$complete): ?>
@@ -268,8 +268,8 @@ if ($complete && !empty($fields['birth_date'])) {
   </div>
 
   <?php if (!$complete): ?>
-    <script src="assets/studio-capture.js?v=11" defer></script>
+    <script src="/assets/studio-capture.js?v=11" defer></script>
   <?php endif; ?>
-  <script src="assets/studio-session.js?v=4" defer></script>
+  <script src="/assets/studio-session.js?v=4" defer></script>
 </body>
 </html>
