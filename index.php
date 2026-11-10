@@ -56,7 +56,7 @@ if (is_authenticated()) {
         <h1 class="hero__brand">MY<em>COPY</em></h1>
         <p class="hero__title">An AI trained to be you.</p>
         <p class="hero__lead">
-          A photo. A training phase. Then a decisive choice —
+          A photo, A training phase, Then a decisive choice —
           detach, or stay until you become one.
         </p>
 
